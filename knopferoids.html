@@ -1,5 +1,7 @@
 <html>
 
+<div id="Weltraum">
+
 <div class="Ding" id="Raumschiff">
     <img id="Raumschiff-off" src="Raumschiff-off.png" />
     <img id="Raumschiff-on" src="Raumschiff-on.png" />
@@ -12,10 +14,14 @@
 <div class="ReferenzPunkt" id="ReferenzPunkt">
 </div>
 
+</div>
 
 <style>
     body { background-color: black; }
-    .Ding { position:fixed; }
+
+    #Weltraum { position:absolute; }
+
+    .Ding { position:absolute; }
 
     #Raumschiff-off, #Raumschiff-on { width: 30px; }
     #Raumschiff-off { position: absolute; }

@@ -70,7 +70,7 @@ var AsteroidDarsteller = (function(htmlElement, asteroid) {
 
 var Spieldarsteller = (function(document, spiel) {
 
-    var _darstellbareObjekte = [];
+    var _darstellbareObjekte = [], kameraLeft = 0, kameraTop = 0, weltraumElement = document.getElementById("Weltraum");
 
     _darstellbareObjekte.push(
         RaumschiffDarsteller(document.getElementById("Raumschiff"), spiel.raumschiff)
@@ -87,6 +87,11 @@ var Spieldarsteller = (function(document, spiel) {
     );
 
     function _stelleDar() {
+        kameraLeft = spiel.raumschiff.daten.left - 500;
+        kameraTop = spiel.raumschiff.daten.top - 200;
+
+        weltraumElement.style.left = -kameraLeft;
+        weltraumElement.style.top = -kameraTop;
         for (objekt of _darstellbareObjekte) {
             objekt.stelleDar();
         }
