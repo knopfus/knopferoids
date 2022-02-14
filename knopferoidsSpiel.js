@@ -85,15 +85,46 @@ var ZufallsAsteroid = function(naheBeiLeft, naheBeiTop) {
     function zufallsZahl(maximalerAbstand) {
         return (Math.random() * 2 - 1) * maximalerAbstand;
     }
+
+    var radius = zufallsZahl(50) + 50
+
     return Asteroid({
             left: naheBeiLeft + zufallsZahl(4000),
             top: naheBeiTop + zufallsZahl(4000),
             winkel: zufallsZahl(180),
-            radius: zufallsZahl(50) + 50,
+            radius: radius,
+            masse: radius * radius * radius / 1000,
             geschwindigkeitNachRechts: zufallsZahl(1),
             geschwindigkeitNachUnten: zufallsZahl(1),
             geschwindigkeitWinkel:  zufallsZahl(0.002)
         });
+};
+
+var zieheAn = function(subjekt, objekt) {
+    var masse = subjekt.daten.masse,
+        maxAbstand = masse * 10,
+        sx = subjekt.daten.left, sy = subjekt.daten.top,
+        ox = objekt.daten.left, oy = objekt.daten.top,
+        dx = sx - ox, dy = sy - oy, abstand,
+        dx2, dy2, abstand2,
+        G = 1, g, gx, gy;
+
+    // Wenn Abstand in x oder y Achse schon überschritten ist, ist er es sowieso
+    if (dx > maxAbstand || dx < -maxAbstand ||
+        dy > maxAbstand || dy < -maxAbstand) { return; }
+
+    dx2 = dx * dx; dy2 = dy * dy; abstand2 = dx2 + dy2;
+    abstand = Math.sqrt(abstand2);
+    if (abstand > maxAbstand) { return; }
+
+    // Gravitation is umgekehrt quadratisch zum Abstand
+    // Die x- und y-Vektoren werden mit dem x- und y-Abstand multipliziert damit
+    // die Richtung stimmt. Damit wäre es aber wieder nur noch umgekehrt proportional
+    // also muss nochmals durch den Abstand geteilt werden.
+    g = G * masse / abstand2 / abstand;
+    gx = g * dx; gy = g * dy;
+    objekt.daten.geschwindigkeitNachRechts += gx;
+    objekt.daten.geschwindigkeitNachLinks += gy;
 };
 
 var Spiel = (function() {
@@ -121,6 +152,10 @@ var Spiel = (function() {
             objekt.fuehreAus();
         }
 
+        for (asteroid of _asteroiden) {
+            zieheAn(asteroid, _raumschiff);
+        }
+
         // Wenn Objekt sehr weit rechts vom Raumschiff weg ist, lassen wir es einfach
         // vom gegenüberliegenden "Rand" wieder hineinfliegen.
         for (objekt of _bewegbareObjekte) {
@@ -138,7 +173,6 @@ var Spiel = (function() {
                 objekt.daten.top += 2 * maximalerAbstandVomRaumschiff;
             }
         }
-        
     };
 
     return {
