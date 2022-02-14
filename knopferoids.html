@@ -1,0 +1,31 @@
+<html>
+
+<div class="Ding" id="Raumschiff">
+    <img id="Raumschiff-off" src="Raumschiff-off.png" />
+    <img id="Raumschiff-on" src="Raumschiff-on.png" />
+</div>
+
+<div class="Ding" class="Asteroid" id="Asteroid0">
+    <img src="Asteroid.png" />
+</div>
+
+<div class="ReferenzPunkt" id="ReferenzPunkt">
+</div>
+
+
+<style>
+    body { background-color: black; }
+    .Ding { position:fixed; }
+
+    #Raumschiff-off, #Raumschiff-on { width: 30px; }
+    #Raumschiff-off { position: absolute; }
+    #Raumschiff-on { visibility: hidden; }
+
+    .ReferenzPunkt { width: 0px; height: 0px; border: 1px solid red; }
+</style>
+
+<script type="text/javascript" src="knopferoidsSpiel.js"></script>
+<script type="text/javascript" src="knopferoidsDarstellungUndBedienung.js"></script>
+
+
+</html>
