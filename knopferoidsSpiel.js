@@ -81,31 +81,62 @@ var Asteroid = (function(startDaten) {
     };
 });
 
+var ZufallsAsteroid = function(naheBeiLeft, naheBeiTop) {
+    function zufallsZahl(maximalerAbstand) {
+        return (Math.random() * 2 - 1) * maximalerAbstand;
+    }
+    return Asteroid({
+            left: naheBeiLeft + zufallsZahl(4000),
+            top: naheBeiTop + zufallsZahl(4000),
+            winkel: zufallsZahl(180),
+            radius: zufallsZahl(50) + 50,
+            geschwindigkeitNachRechts: zufallsZahl(1),
+            geschwindigkeitNachUnten: zufallsZahl(1),
+            geschwindigkeitWinkel:  zufallsZahl(0.002)
+        });
+};
 
 var Spiel = (function() {
 
     var _ausfuehrbareObjekte = [],
         _bewegbareObjekte = [],
         _raumschiff,
-        _asteroiden = [];
+        _asteroiden = [],
+        asteroid,
+        maximalerAbstandVomRaumschiff = 2000;
 
 
     _raumschiff = Raumschiff(500, 200, NORD);
     _ausfuehrbareObjekte.push(_raumschiff);
     _bewegbareObjekte.push(_raumschiff);
 
-    var asteroid = Asteroid({ left: 100, top: 100, winkel: 0, geschwindigkeitNachRechts: 0.2, geschwindigkeitNachUnten: 0.1, geschwindigkeitWinkel: 0.001 });
-    _asteroiden.push(asteroid);
-    _bewegbareObjekte.push(asteroid);
-
+    for (var i = 0; i < 50; i++) {
+        var asteroid = ZufallsAsteroid(500, 200);
+        _asteroiden.push(asteroid);
+        _bewegbareObjekte.push(asteroid);
+    }
 
     function _weiter() {
         for (objekt of _ausfuehrbareObjekte) {
             objekt.fuehreAus();
         }
 
+        // Wenn Objekt sehr weit rechts vom Raumschiff weg ist, lassen wir es einfach
+        // vom gegenüberliegenden "Rand" wieder hineinfliegen.
         for (objekt of _bewegbareObjekte) {
             objekt.bewege();
+            if (objekt.daten.left - _raumschiff.daten.left > maximalerAbstandVomRaumschiff) {
+                objekt.daten.left -= 2 * maximalerAbstandVomRaumschiff;
+            }
+            if (objekt.daten.left - _raumschiff.daten.left < -maximalerAbstandVomRaumschiff) {
+                objekt.daten.left += 2 * maximalerAbstandVomRaumschiff;
+            }
+            if (objekt.daten.top - _raumschiff.daten.top > maximalerAbstandVomRaumschiff) {
+                objekt.daten.top -= 2 * maximalerAbstandVomRaumschiff;
+            }
+            if (objekt.daten.top - _raumschiff.daten.top < -maximalerAbstandVomRaumschiff) {
+                objekt.daten.top += 2 * maximalerAbstandVomRaumschiff;
+            }
         }
         
     };

@@ -57,9 +57,12 @@ var ReferenzPunktDarsteller = (function(htmlElement, objekt) {
 
 var AsteroidDarsteller = (function(htmlElement, asteroid) {
 
-    var _htmlElement = htmlElement, _asteroid = asteroid;
+    var _htmlElement = htmlElement,
+        _imgElement = _htmlElement.querySelector("img"),
+        _asteroid = asteroid;
 
     function _stelleDar() {
+        _imgElement.style.width = asteroid.daten.radius * 2 + "px";
         platziereElement(_htmlElement, _asteroid.daten.left, _asteroid.daten.top, _asteroid.daten.winkel);
     }
 
@@ -70,15 +73,24 @@ var AsteroidDarsteller = (function(htmlElement, asteroid) {
 
 var Spieldarsteller = (function(document, spiel) {
 
-    var _darstellbareObjekte = [], kameraLeft = 0, kameraTop = 0, weltraumElement = document.getElementById("Weltraum");
+    var _darstellbareObjekte = [], kameraLeft = 0, kameraTop = 0,
+        weltraumElement = document.getElementById("Weltraum"), asteroidElement, asteroidTemplateElement, i;
 
     _darstellbareObjekte.push(
         RaumschiffDarsteller(document.getElementById("Raumschiff"), spiel.raumschiff)
     );
 
     for (asteroid of spiel.asteroiden) {
+        if (!asteroidElement) {
+            // Für den ersten Asteroiden nehmen wir das originale HTML Element
+            asteroidElement = document.getElementById("Asteroid0");
+        } else {
+            // Für die weiteren klonen wir das jeweils vorherige Element
+            asteroidElement = asteroidElement.cloneNode(true);
+            weltraumElement.appendChild(asteroidElement); // Fügt das HTML Element innerhalb des Weltraums hinzu
+        }
         _darstellbareObjekte.push(
-            AsteroidDarsteller(document.getElementById("Asteroid0"), asteroid)
+            AsteroidDarsteller(asteroidElement, asteroid)
         );
     }
 
