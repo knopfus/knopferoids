@@ -8,14 +8,14 @@ var cssVonWinkel = function(winkel) {
     return (Math.PI / 2) - winkel;
 };
 
-var platziereElement = function(htmlElement, left, top, winkel, nachRechts, nachUnten) {
+var platziereElement = function(htmlElement, x, y, winkel, nachRechts, nachUnten) {
     if (!winkel) winkel = 0;
     if (!nachRechts) nachRechts = 0;
     if (!nachUnten) nachUnten = 0;
 
     htmlElement.style.transform = " "
-            + "translateX(" + (left - htmlElement.clientWidth / 2) + "px) "
-            + "translateY(" + (top - htmlElement.clientHeight / 2) + "px) "
+            + "translateX(" + (x - htmlElement.clientWidth / 2) + "px) "
+            + "translateY(" + (800 - y - htmlElement.clientHeight / 2) + "px) "
             + "rotate(" + cssVonWinkel(winkel) + "rad) "
             + "translateX(" + nachRechts + "px) "
             + "translateY(" + nachUnten + "px) ";
@@ -31,7 +31,7 @@ var RaumschiffDarsteller = (function(htmlElement, raumschiff) {
 
     function _stelleDar() {
         platziereElement(
-            _htmlElement, _raumschiff.daten.left, _raumschiff.daten.top, _raumschiff.daten.winkel, 0, 10);
+            _htmlElement, _raumschiff.daten.ort.x, _raumschiff.daten.ort.y, _raumschiff.daten.winkel, 0, 10);
 
         _imgWennGas.style.visibility = _raumschiff.daten.gibtGas ? "visible" : "hidden";
     }
@@ -47,7 +47,7 @@ var ReferenzPunktDarsteller = (function(htmlElement, objekt) {
 
     function _stelleDar() {
         platziereElement(
-            _htmlElement, _objekt.daten.left, _objekt.daten.top);
+            _htmlElement, _objekt.daten.ort.x, _objekt.daten.ort.y);
     }
 
     return {
@@ -66,7 +66,7 @@ var AsteroidDarsteller = (function(htmlElement, asteroid) {
         _imgElement.style.width = asteroid.daten.radius * 2 + "px";
         _spanElement.innerText = Math.floor(_asteroid.daten.geschwindigkeitNachRechts*10) + "," +
             Math.floor(_asteroid.daten.geschwindigkeitNachUnten*10);
-        platziereElement(_htmlElement, _asteroid.daten.left, _asteroid.daten.top, _asteroid.daten.winkel);
+        platziereElement(_htmlElement, _asteroid.daten.ort.x, _asteroid.daten.ort.y, _asteroid.daten.winkel);
     }
 
     return {
@@ -76,7 +76,7 @@ var AsteroidDarsteller = (function(htmlElement, asteroid) {
 
 var Spieldarsteller = (function(document, spiel) {
 
-    var _darstellbareObjekte = [], kameraLeft = 0, kameraTop = 0,
+    var _darstellbareObjekte = [], kamera = new Vektor(0, 0),
         weltraumElement = document.getElementById("Weltraum"), asteroidElement, asteroidTemplateElement, i;
 
     _darstellbareObjekte.push(
@@ -102,11 +102,10 @@ var Spieldarsteller = (function(document, spiel) {
     );
 
     function _stelleDar() {
-        kameraLeft = spiel.raumschiff.daten.left - 500;
-        kameraTop = spiel.raumschiff.daten.top - 200;
+        kamera = spiel.raumschiff.daten.ort;
 
-        weltraumElement.style.left = -kameraLeft;
-        weltraumElement.style.top = -kameraTop;
+        weltraumElement.style.left = -kamera.x + 500;
+        weltraumElement.style.top = kamera.y - 400;
         for (objekt of _darstellbareObjekte) {
             objekt.stelleDar();
         }

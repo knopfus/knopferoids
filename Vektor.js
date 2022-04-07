@@ -44,12 +44,12 @@ class Vektor {
         return new Vektor(-this.x, -this.y);
     }
 
-    rotiertUm(dw) {
-        var w_ = this.w + dw,
-            x_ = this.r * Math.cos(w_),
-            y_ = this.r * Math.sin(w_);
+    invertiertY() {
+        return new Vektor(this.x, -this.y);
+    }
 
-        return new Vektor(x_, y_);
+    rotiertUm(dw) {
+        return Vektor.vonWinkelUndRadius(this.w + dw, this.r);
     }
 
     skaliertUm(faktor) {
@@ -66,5 +66,11 @@ class Vektor {
 
     toString() {
         return "(" + this.x + "," + this.y + ")";
+    }
+
+    static vonWinkelUndRadius(winkel, radius) {
+        return new Vektor(
+            Math.cos(winkel) * radius,
+            Math.sin(winkel) * radius);
     }
 }

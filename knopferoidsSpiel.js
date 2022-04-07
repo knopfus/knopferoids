@@ -1,11 +1,11 @@
 
 const NORD = Math.PI / 2;
 
-var Raumschiff = (function(left, top, winkel) {
+var Raumschiff = (function(x, y, winkel) {
 
     var _daten = {
-        left: left, top: top, winkel: winkel,
-        geschwindigkeitNachRechts: 0, geschwindigkeitNachUnten: 0,
+        ort: new Vektor(x, y), winkel: winkel,
+        geschwindigkeit: new Vektor(0, 0),
         drehtNachLinks: false, drehtNachRechts: false, gibtGas: false
     };
 
@@ -34,18 +34,12 @@ var Raumschiff = (function(left, top, winkel) {
     }
 
     function _beschleunige() {
-        var radius = 0.1,
-            nachRechts = Math.cos(_daten.winkel) * radius,
-            nachOben = Math.sin(_daten.winkel) * radius,
-            nachUnten = -nachOben;
-
-        _daten.geschwindigkeitNachRechts += nachRechts;
-        _daten.geschwindigkeitNachUnten += nachUnten;
+        var beschleunigung = Vektor.vonWinkelUndRadius(_daten.winkel, 0.1);
+        _daten.geschwindigkeit = _daten.geschwindigkeit.plus(beschleunigung);
     }
 
     function _bewege() {
-        _daten.left += _daten.geschwindigkeitNachRechts;
-        _daten.top += _daten.geschwindigkeitNachUnten;
+        _daten.ort = _daten.ort.plus(_daten.geschwindigkeit);
     }
 
     function _fuehreAus() {
@@ -65,13 +59,12 @@ var Raumschiff = (function(left, top, winkel) {
 });
 
 
-var Asteroid = (function(startDaten) {
+var Asteroid = (function(daten) {
 
-    var _daten = JSON.parse(JSON.stringify(startDaten));
+    var _daten = daten;
 
     function _bewege() {
-        _daten.left += _daten.geschwindigkeitNachRechts;
-        _daten.top += _daten.geschwindigkeitNachUnten;
+        _daten.ort = _daten.ort.plus(_daten.geschwindigkeit);
         _daten.winkel += _daten.geschwindigkeitWinkel;
     }
 
@@ -81,7 +74,7 @@ var Asteroid = (function(startDaten) {
     };
 });
 
-var ZufallsAsteroid = function(naheBeiLeft, naheBeiTop) {
+var ZufallsAsteroid = function(naheBeiX, naheBeiY) {
     function zufallsZahl(maximalerAbstand) {
         return (Math.random() * 2 - 1) * maximalerAbstand;
     }
@@ -89,13 +82,11 @@ var ZufallsAsteroid = function(naheBeiLeft, naheBeiTop) {
     var radius = zufallsZahl(50) + 50
 
     return Asteroid({
-            left: naheBeiLeft + zufallsZahl(4000),
-            top: naheBeiTop + zufallsZahl(4000),
+            ort: new Vektor(naheBeiX + zufallsZahl(4000), naheBeiY + zufallsZahl(4000)),
             winkel: zufallsZahl(180),
             radius: radius,
             masse: radius * radius * radius / 1000,
-            geschwindigkeitNachRechts: zufallsZahl(1),
-            geschwindigkeitNachUnten: zufallsZahl(1),
+            geschwindigkeit: new Vektor(zufallsZahl(1), zufallsZahl(1)),
             geschwindigkeitWinkel:  zufallsZahl(0.002)
         });
 };
@@ -104,36 +95,29 @@ var zieheAn = function(subjekt, objekt) {
 
     var masse = subjekt.daten.masse,
         maxAbstand = masse * 10,
-        sx = subjekt.daten.left, sy = subjekt.daten.top,
-        ox = objekt.daten.left, oy = objekt.daten.top,
-        dx = sx - ox, dy = sy - oy, abstand,
-        dx2, dy2, abstand2,
-        G = 1, g, gx, gy;
+        s = subjekt.daten.ort,
+        o = objekt.daten.ort,
+        d = o.minus(s),
+        G = 1;
 
     // Wenn maxAbstand in x oder y Achse schon überschritten ist, ist er es sowieso
-    if (dx > maxAbstand || dx < -maxAbstand ||
-        dy > maxAbstand || dy < -maxAbstand) { return; }
+    if (d.x > maxAbstand || d.x < -maxAbstand ||
+        d.y > maxAbstand || d.y < -maxAbstand) { return; }
 
-    dx2 = dx * dx; dy2 = dy * dy; abstand2 = dx2 + dy2;
-    abstand = Math.sqrt(abstand2);
-    if (abstand > maxAbstand) { return; }
+    if (d.r > maxAbstand) { return; }
 
     // Auf Oberfläche aufgetroffen?
-    if (abstand - subjekt.daten.radius < 10) {
-        var ov = new Vektor(objekt.daten.geschwindigkeitNachRechts, objekt.daten.geschwindigkeitNachUnten),
-            sv = new Vektor(subjekt.daten.geschwindigkeitNachRechts, subjekt.daten.geschwindigkeitNachUnten),
-            v = ov.minus(sv),
-            r = new Vektor(dx, dy),
-            v_ = v.rotiertUm(-r.w);
+    if (d.r - subjekt.daten.radius < 10) {
+        var v = objekt.daten.geschwindigkeit.minus(subjekt.daten.geschwindigkeit),
+            v_ = v.rotiertUm(-d.w);
 
-        if (v_.x > 1) { console.log("boom"); }
+        if (v_.x < -1.2) { console.log("boom"); }
 
-        var v_neu = new Vektor(Math.min(v_.x, 0), 0),
-            vneu = v_neu.rotiertUm(r.w),
-            ovneu = vneu.plus(sv);
+        var v_neu = new Vektor(Math.max(v_.x, 0), 0),
+            vneu = v_neu.rotiertUm(d.w),
+            ovneu = vneu.plus(subjekt.daten.geschwindigkeit);
 
-        objekt.daten.geschwindigkeitNachRechts = ovneu.x;
-        objekt.daten.geschwindigkeitNachUnten = ovneu.y;
+        objekt.daten.geschwindigkeit = ovneu;
 
         return;
     }
@@ -142,10 +126,8 @@ var zieheAn = function(subjekt, objekt) {
     // Die x- und y-Vektoren werden mit dem x- und y-Abstand multipliziert damit
     // die Richtung stimmt. Damit wäre es aber wieder nur noch umgekehrt proportional
     // also muss nochmals durch den Abstand geteilt werden.
-    g = G * masse / abstand2 / abstand;
-    gx = g * dx; gy = g * dy;
-    objekt.daten.geschwindigkeitNachRechts += gx;
-    objekt.daten.geschwindigkeitNachUnten += gy;
+    var g = d.skaliertUm(G * masse / Math.pow(d.r, 2) / d.r);
+    objekt.daten.geschwindigkeit = objekt.daten.geschwindigkeit.minus(g);
 };
 
 var Spiel = (function() {
@@ -182,17 +164,17 @@ var Spiel = (function() {
         // vom gegenüberliegenden "Rand" wieder hineinfliegen.
         for (objekt of _bewegbareObjekte) {
             objekt.bewege();
-            if (objekt.daten.left - _raumschiff.daten.left > maximalerAbstandVomRaumschiff) {
-                objekt.daten.left -= 2 * maximalerAbstandVomRaumschiff;
+            if (objekt.daten.ort.x - _raumschiff.daten.ort.x > maximalerAbstandVomRaumschiff) {
+                objekt.daten.ort = objekt.daten.ort.minus(new Vektor(2 * maximalerAbstandVomRaumschiff, 0));
             }
-            if (objekt.daten.left - _raumschiff.daten.left < -maximalerAbstandVomRaumschiff) {
-                objekt.daten.left += 2 * maximalerAbstandVomRaumschiff;
+            if (objekt.daten.ort.x - _raumschiff.daten.ort.x < -maximalerAbstandVomRaumschiff) {
+                objekt.daten.ort = objekt.daten.ort.plus(new Vektor(2 * maximalerAbstandVomRaumschiff, 0));
             }
-            if (objekt.daten.top - _raumschiff.daten.top > maximalerAbstandVomRaumschiff) {
-                objekt.daten.top -= 2 * maximalerAbstandVomRaumschiff;
+            if (objekt.daten.ort.y - _raumschiff.daten.ort.y > maximalerAbstandVomRaumschiff) {
+                objekt.daten.ort = objekt.daten.ort.minus(new Vektor(0, 2 * maximalerAbstandVomRaumschiff));
             }
-            if (objekt.daten.top - _raumschiff.daten.top < -maximalerAbstandVomRaumschiff) {
-                objekt.daten.top += 2 * maximalerAbstandVomRaumschiff;
+            if (objekt.daten.ort.y - _raumschiff.daten.ort.y < -maximalerAbstandVomRaumschiff) {
+                objekt.daten.ort = objekt.daten.ort.plus(new Vektor(0, 2 * maximalerAbstandVomRaumschiff));
             }
         }
     };
