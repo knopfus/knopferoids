@@ -95,9 +95,7 @@ var zieheAn = function(subjekt, objekt) {
 
     var masse = subjekt.daten.masse,
         maxAbstand = masse * 10,
-        s = subjekt.daten.ort,
-        o = objekt.daten.ort,
-        d = o.minus(s),
+        d = objekt.daten.ort.minus(subjekt.daten.ort),
         G = 1;
 
     // Wenn maxAbstand in x oder y Achse schon überschritten ist, ist er es sowieso
