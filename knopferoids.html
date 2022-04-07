@@ -9,6 +9,7 @@
 
 <div class="Ding" class="Asteroid" id="Asteroid0">
     <img src="Asteroid.png" />
+    <span class="Beschriftung">1, -2, +3</span>
 </div>
 
 <div class="ReferenzPunkt" id="ReferenzPunkt">
@@ -16,20 +17,9 @@
 
 </div>
 
-<style>
-    body { background-color: black; overflow: hidden; }
+<link rel="stylesheet" href="knopferoids.css"></link>
 
-    #Weltraum { position:absolute; }
-
-    .Ding { position:absolute; }
-
-    #Raumschiff-off, #Raumschiff-on { width: 20px; }
-    #Raumschiff-off { position: absolute; }
-    #Raumschiff-on { visibility: hidden; }
-
-    .ReferenzPunkt { width: 0px; height: 0px; border: 1px solid red; }
-</style>
-
+<script type="text/javascript" src="Vektor.js"></script>
 <script type="text/javascript" src="knopferoidsSpiel.js"></script>
 <script type="text/javascript" src="knopferoidsDarstellung.js"></script>
 <script type="text/javascript" src="knopferoidsBedienung.js"></script>

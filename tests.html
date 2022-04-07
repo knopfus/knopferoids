@@ -1,0 +1,57 @@
+<script type="text/javascript" src="Vektor.js"></script>
+
+<script>
+function assertEquals(expected, actual) {
+    if (expected != actual) { throw "Expected " + expected + " but got " + actual; }
+}
+
+function assertAlmostEquals(expected, actual) {
+    if (Math.abs(expected - actual) > 0.001) { throw "Expected " + expected + " but got " + actual; }
+}
+
+function assertFastGleich(expectedV, actualV) {
+    if (!expectedV.fastGleich(actualV)) { throw "Expected " + expectedV.toString() + " but got " + actualV.toString(); }
+}
+
+(function tests() {    
+    var v1 = new Vektor(-3, 4);
+
+    assertEquals(-3, v1.x);
+    assertEquals(4, v1.y);
+    assertEquals(5, v1.r);
+    assertAlmostEquals(v1.x, Math.cos(v1.w) * v1.r);
+    assertAlmostEquals(v1.y, Math.sin(v1.w) * v1.r);
+
+    var v2 = new Vektor(5, 12);
+    
+    assertEquals(5, v2.x);
+    assertEquals(12, v2.y);
+    assertEquals(13, v2.r);
+    assertAlmostEquals(v2.x, Math.cos(v2.w) * v2.r);
+    assertAlmostEquals(v2.y, Math.sin(v2.w) * v2.r);
+
+
+    var dv = v2.minus(v1);
+    assertEquals(8, dv.x);
+    assertEquals(8, dv.y);
+    assertAlmostEquals(128, Math.pow(dv.r, 2));
+    assertAlmostEquals(dv.x, Math.cos(dv.w) * dv.r);
+    assertAlmostEquals(dv.y, Math.sin(dv.w) * dv.r);
+
+    assertFastGleich(new Vektor(3, -4), v1.invertiert());
+    assertFastGleich(dv, v2.plus(v1.invertiert()));
+
+    var v3 = v1.plus(v2);
+    assertEquals(2, v3.x);
+    assertEquals(16, v3.y);
+    assertAlmostEquals(260, Math.pow(v3.r, 2));
+    assertAlmostEquals(v3.x, Math.cos(v3.w) * v3.r);
+    assertAlmostEquals(v3.y, Math.sin(v3.w) * v3.r);
+
+    // relativeZu
+    assertFastGleich(v1, v1.rotiertUm(-new Vektor(3, 0).w));
+    assertFastGleich(new Vektor(4, 3), v1.rotiertUm(-new Vektor(0, 9).w));
+    assertFastGleich(new Vektor(0, 5), v1.rotiertUm(-new Vektor(4, 3).w));
+    
+}());
+</script>

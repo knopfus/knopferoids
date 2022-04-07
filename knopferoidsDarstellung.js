@@ -59,10 +59,13 @@ var AsteroidDarsteller = (function(htmlElement, asteroid) {
 
     var _htmlElement = htmlElement,
         _imgElement = _htmlElement.querySelector("img"),
+        _spanElement = _htmlElement.querySelector("span"),
         _asteroid = asteroid;
 
     function _stelleDar() {
         _imgElement.style.width = asteroid.daten.radius * 2 + "px";
+        _spanElement.innerText = Math.floor(_asteroid.daten.geschwindigkeitNachRechts*10) + "," +
+            Math.floor(_asteroid.daten.geschwindigkeitNachUnten*10);
         platziereElement(_htmlElement, _asteroid.daten.left, _asteroid.daten.top, _asteroid.daten.winkel);
     }
 

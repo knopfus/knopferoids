@@ -101,6 +101,7 @@ var ZufallsAsteroid = function(naheBeiLeft, naheBeiTop) {
 };
 
 var zieheAn = function(subjekt, objekt) {
+
     var masse = subjekt.daten.masse,
         maxAbstand = masse * 10,
         sx = subjekt.daten.left, sy = subjekt.daten.top,
@@ -109,13 +110,33 @@ var zieheAn = function(subjekt, objekt) {
         dx2, dy2, abstand2,
         G = 1, g, gx, gy;
 
-    // Wenn Abstand in x oder y Achse schon überschritten ist, ist er es sowieso
+    // Wenn maxAbstand in x oder y Achse schon überschritten ist, ist er es sowieso
     if (dx > maxAbstand || dx < -maxAbstand ||
         dy > maxAbstand || dy < -maxAbstand) { return; }
 
     dx2 = dx * dx; dy2 = dy * dy; abstand2 = dx2 + dy2;
     abstand = Math.sqrt(abstand2);
     if (abstand > maxAbstand) { return; }
+
+    // Auf Oberfläche aufgetroffen?
+    if (abstand - subjekt.daten.radius < 10) {
+        var ov = new Vektor(objekt.daten.geschwindigkeitNachRechts, objekt.daten.geschwindigkeitNachUnten),
+            sv = new Vektor(subjekt.daten.geschwindigkeitNachRechts, subjekt.daten.geschwindigkeitNachUnten),
+            v = ov.minus(sv),
+            r = new Vektor(dx, dy),
+            v_ = v.rotiertUm(-r.w);
+
+        if (v_.x > 1) { console.log("boom"); }
+
+        var v_neu = new Vektor(Math.min(v_.x, 0), 0),
+            vneu = v_neu.rotiertUm(r.w),
+            ovneu = vneu.plus(sv);
+
+        objekt.daten.geschwindigkeitNachRechts = ovneu.x;
+        objekt.daten.geschwindigkeitNachUnten = ovneu.y;
+
+        return;
+    }
 
     // Gravitation is umgekehrt quadratisch zum Abstand
     // Die x- und y-Vektoren werden mit dem x- und y-Abstand multipliziert damit
@@ -124,7 +145,7 @@ var zieheAn = function(subjekt, objekt) {
     g = G * masse / abstand2 / abstand;
     gx = g * dx; gy = g * dy;
     objekt.daten.geschwindigkeitNachRechts += gx;
-    objekt.daten.geschwindigkeitNachLinks += gy;
+    objekt.daten.geschwindigkeitNachUnten += gy;
 };
 
 var Spiel = (function() {
@@ -133,6 +154,7 @@ var Spiel = (function() {
         _bewegbareObjekte = [],
         _raumschiff,
         _asteroiden = [],
+        _amLaufen = true,
         asteroid,
         maximalerAbstandVomRaumschiff = 2000;
 
@@ -142,7 +164,7 @@ var Spiel = (function() {
     _bewegbareObjekte.push(_raumschiff);
 
     for (var i = 0; i < 50; i++) {
-        var asteroid = ZufallsAsteroid(500, 200);
+        asteroid = ZufallsAsteroid(500, 200);
         _asteroiden.push(asteroid);
         _bewegbareObjekte.push(asteroid);
     }
@@ -175,10 +197,15 @@ var Spiel = (function() {
         }
     };
 
+    function _pausierenOderWeitermachen() {
+        _amLaufen = !_amLaufen;
+    }
+
     return {
-        amLaufen: true,
+        amLaufen: function() { return _amLaufen; },
         raumschiff: _raumschiff,
         asteroiden: _asteroiden,
+        pausierenOderWeitermachen: _pausierenOderWeitermachen,
         weiter: _weiter
     };
 });

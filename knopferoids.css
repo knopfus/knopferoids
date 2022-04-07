@@ -1,0 +1,13 @@
+    body { background-color: black; overflow: hidden; }
+
+    #Weltraum { position:absolute; }
+
+    .Ding { position:absolute; }
+
+    #Raumschiff-off, #Raumschiff-on { width: 20px; }
+    #Raumschiff-off { position: absolute; }
+    #Raumschiff-on { visibility: hidden; }
+
+    .ReferenzPunkt { width: 0px; height: 0px; border: 1px solid red; display: none; }
+
+    .Beschriftung { color: red; font-size: 10px; display: none; }
