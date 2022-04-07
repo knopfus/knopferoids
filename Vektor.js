@@ -44,10 +44,6 @@ class Vektor {
         return new Vektor(-this.x, -this.y);
     }
 
-    invertiertY() {
-        return new Vektor(this.x, -this.y);
-    }
-
     rotiertUm(dw) {
         return Vektor.vonWinkelUndRadius(this.w + dw, this.r);
     }
