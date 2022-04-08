@@ -1,13 +1,23 @@
-    body { background-color: black; overflow: hidden; }
+body { background-color: black; overflow: hidden; }
 
-    #Weltraum { position:absolute; }
+#Weltraum { position:absolute; }
 
-    .Ding { position:absolute; }
+.Ding { position:absolute; }
 
-    #Raumschiff-off, #Raumschiff-on { width: 20px; }
-    #Raumschiff-off { position: absolute; }
-    #Raumschiff-on { visibility: hidden; }
+#Raumschiff-off, #Raumschiff-on { width: 20px; }
+#Raumschiff-off { position: absolute; }
+#Raumschiff-on { visibility: hidden; }
 
-    .ReferenzPunkt { width: 0px; height: 0px; border: 1px solid red; display: none; }
+.ReferenzPunkt { width: 0px; height: 0px; border: 1px solid red; display: none; }
 
-    .Beschriftung { color: red; font-size: 10px; display: none; }
+.Beschriftung { color: red; font-size: 10px; display: none; }
+
+#Status {
+    color: red;
+    font-family: Courier;
+    font-size: 1em;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}

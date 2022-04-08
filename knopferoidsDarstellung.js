@@ -74,10 +74,32 @@ var AsteroidDarsteller = (function(htmlElement, asteroid) {
     };
 });
 
+var StatusDarsteller = (function(htmlElement, spiel) {
+    var _htmlElement = htmlElement,
+        _displayDefault = htmlElement.style.display;
+
+    function _stelleDar() {
+        if (spiel.status() == AM_LAUFEN) {
+            _htmlElement.style.display = "none";
+        } else {
+            _htmlElement.style.display = _displayDefault;
+            switch (spiel.status()) {
+                case PAUSE: _htmlElement.innerText = "Taste P drücken für Pause/Start"; break;
+                case GAME_OVER: _htmlElement.innerText = "Aus und vorbei!"; break;
+            }
+        }
+    }
+
+    return {
+        stelleDar: _stelleDar
+    };
+});
+
 var Spieldarsteller = (function(document, spiel) {
 
     var _darstellbareObjekte = [], kamera = new Vektor(0, 0),
-        weltraumElement = document.getElementById("Weltraum"), asteroidElement, asteroidTemplateElement, i;
+        weltraumElement = document.getElementById("Weltraum"),
+        asteroidElement, asteroidTemplateElement, i;
 
     _darstellbareObjekte.push(
         RaumschiffDarsteller(document.getElementById("Raumschiff"), spiel.raumschiff)
@@ -99,6 +121,10 @@ var Spieldarsteller = (function(document, spiel) {
 
     _darstellbareObjekte.push(
         ReferenzPunktDarsteller(document.getElementById("ReferenzPunkt"), spiel.raumschiff)
+    );
+
+    _darstellbareObjekte.push(
+        StatusDarsteller(document.getElementById("Status"), spiel)
     );
 
     function _stelleDar() {

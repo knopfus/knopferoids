@@ -1,5 +1,8 @@
 
 const NORD = Math.PI / 2;
+const AM_LAUFEN = 0;
+const PAUSE = 10;
+const GAME_OVER = 20;
 
 var Raumschiff = (function(x, y, winkel) {
 
@@ -134,7 +137,7 @@ var Spiel = (function() {
         _bewegbareObjekte = [],
         _raumschiff,
         _asteroiden = [],
-        _amLaufen = true,
+        _status = PAUSE,
         asteroid,
         maximalerAbstandVomRaumschiff = 2000;
 
@@ -178,11 +181,15 @@ var Spiel = (function() {
     };
 
     function _pausierenOderWeitermachen() {
-        _amLaufen = !_amLaufen;
+        switch (_status) {
+            case AM_LAUFEN: _status = PAUSE; break;
+            case PAUSE: _status = AM_LAUFEN; break;
+            case GAME_OVER: break;
+        }
     }
 
     return {
-        amLaufen: function() { return _amLaufen; },
+        status: function() { return _status; },
         raumschiff: _raumschiff,
         asteroiden: _asteroiden,
         pausierenOderWeitermachen: _pausierenOderWeitermachen,
