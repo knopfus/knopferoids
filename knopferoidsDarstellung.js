@@ -26,14 +26,21 @@ var RaumschiffDarsteller = (function(htmlElement, raumschiff) {
     var _htmlElement = htmlElement,
         _raumschiff = raumschiff,
         _imgWennGas = htmlElement.querySelector("#Raumschiff-on"),
+        _imgWennZerstört = htmlElement.querySelector("#Raumschiff-explode"),
         _linksVerschiebung = 0,
         _hochVerschiebung = 0;
 
     function _stelleDar() {
         platziereElement(
-            _htmlElement, _raumschiff.daten.ort.x, _raumschiff.daten.ort.y, _raumschiff.daten.winkel, 0, 10);
+            _htmlElement,
+            _raumschiff.daten.ort.x,
+            _raumschiff.daten.ort.y,
+            _raumschiff.daten.winkel,
+            0,
+            10);
 
         _imgWennGas.style.visibility = _raumschiff.daten.gibtGas ? "visible" : "hidden";
+        _imgWennZerstört.style.visibility = _raumschiff.daten.zustand == ZERSTÖRT ? "visible" : "hidden";
     }
 
     return {
@@ -85,7 +92,7 @@ var StatusDarsteller = (function(htmlElement, spiel) {
             _htmlElement.style.display = _displayDefault;
             switch (spiel.status()) {
                 case PAUSE: _htmlElement.innerText = "Taste P drücken für Pause/Start"; break;
-                case GAME_OVER: _htmlElement.innerText = "Aus und vorbei!"; break;
+                case GAME_OVER: _htmlElement.innerHTML = "Aus und vorbei!<p/><a href='javascript:location.reload()'>Neustart</a>"; break;
             }
         }
     }
@@ -130,8 +137,8 @@ var Spieldarsteller = (function(document, spiel) {
     function _stelleDar() {
         kamera = spiel.raumschiff.daten.ort;
 
-        weltraumElement.style.left = -kamera.x + 500;
-        weltraumElement.style.top = kamera.y - 400;
+        weltraumElement.style.left = -kamera.x + window.innerWidth / 2;
+        weltraumElement.style.top = kamera.y - window.innerHeight / 2 - 20;
         for (objekt of _darstellbareObjekte) {
             objekt.stelleDar();
         }

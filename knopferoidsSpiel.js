@@ -3,13 +3,19 @@ const NORD = Math.PI / 2;
 const AM_LAUFEN = 0;
 const PAUSE = 10;
 const GAME_OVER = 20;
+const WIE_NEU = 100;
+const ZERSTÖRT = 0;
 
 var Raumschiff = (function(x, y, winkel) {
 
     var _daten = {
-        ort: new Vektor(x, y), winkel: winkel,
+        ort: new Vektor(x, y),
+        winkel: winkel,
         geschwindigkeit: new Vektor(0, 0),
-        drehtNachLinks: false, drehtNachRechts: false, gibtGas: false
+        drehtNachLinks: false,
+        drehtNachRechts: false,
+        gibtGas: false,
+        zustand: WIE_NEU
     };
 
     function _startLinksDrehung() {
@@ -51,13 +57,21 @@ var Raumschiff = (function(x, y, winkel) {
         if (_daten.gibtGas) { _beschleunige(); }
     }
 
+    function _zerstört() {
+        _daten.zustand = ZERSTÖRT;
+    }
+
     return {
         daten: _daten,
         bewege: _bewege,
         fuehreAus: _fuehreAus,
-        startLinksDrehung: _startLinksDrehung, stopLinksDrehung: _stopLinksDrehung,
-        startRechtsDrehung: _startRechtsDrehung, stopRechtsDrehung: _stopRechtsDrehung,
-        startGas: _startGas, stopGas: _stopGas
+        startLinksDrehung: _startLinksDrehung,
+        stopLinksDrehung: _stopLinksDrehung,
+        startRechtsDrehung: _startRechtsDrehung,
+        stopRechtsDrehung: _stopRechtsDrehung,
+        startGas: _startGas,
+        stopGas: _stopGas,
+        zerstört: _zerstört
     };
 });
 
@@ -94,11 +108,11 @@ var ZufallsAsteroid = function(naheBeiX, naheBeiY) {
         });
 };
 
-var zieheAn = function(subjekt, objekt) {
+var zieheAn = function(asteroid, raumschiff) {
 
-    var masse = subjekt.daten.masse,
-        maxAbstand = masse * 10,
-        d = objekt.daten.ort.minus(subjekt.daten.ort),
+    var m = asteroid.daten.masse,
+        maxAbstand = m * 10,
+        d = raumschiff.daten.ort.minus(asteroid.daten.ort),
         G = 1;
 
     // Wenn maxAbstand in x oder y Achse schon überschritten ist, ist er es sowieso
@@ -108,17 +122,19 @@ var zieheAn = function(subjekt, objekt) {
     if (d.r > maxAbstand) { return; }
 
     // Auf Oberfläche aufgetroffen?
-    if (d.r - subjekt.daten.radius < 10) {
-        var v = objekt.daten.geschwindigkeit.minus(subjekt.daten.geschwindigkeit),
+    if (d.r - asteroid.daten.radius < 10) {
+        var v = raumschiff.daten.geschwindigkeit.minus(asteroid.daten.geschwindigkeit),
             v_ = v.rotiertUm(-d.w);
 
-        if (v_.x < -1.2) { console.log("boom"); }
+        if (v_.x < 0 && v.r > 1.5) {
+            raumschiff.zerstört();
+        }
 
         var v_neu = new Vektor(Math.max(v_.x, 0), 0),
             vneu = v_neu.rotiertUm(d.w),
-            ovneu = vneu.plus(subjekt.daten.geschwindigkeit);
+            ovneu = vneu.plus(asteroid.daten.geschwindigkeit);
 
-        objekt.daten.geschwindigkeit = ovneu;
+        raumschiff.daten.geschwindigkeit = ovneu;
 
         return;
     }
@@ -127,8 +143,8 @@ var zieheAn = function(subjekt, objekt) {
     // Die x- und y-Vektoren werden mit dem x- und y-Abstand multipliziert damit
     // die Richtung stimmt. Damit wäre es aber wieder nur noch umgekehrt proportional
     // also muss nochmals durch den Abstand geteilt werden.
-    var g = d.skaliertUm(G * masse / Math.pow(d.r, 2) / d.r);
-    objekt.daten.geschwindigkeit = objekt.daten.geschwindigkeit.minus(g);
+    var g = d.skaliertUm(G * m / Math.pow(d.r, 2) / d.r);
+    raumschiff.daten.geschwindigkeit = raumschiff.daten.geschwindigkeit.minus(g);
 };
 
 var Spiel = (function() {
@@ -159,6 +175,9 @@ var Spiel = (function() {
 
         for (asteroid of _asteroiden) {
             zieheAn(asteroid, _raumschiff);
+            if (_raumschiff.daten.zustand == ZERSTÖRT) {
+                _status = GAME_OVER;
+            }
         }
 
         // Wenn Objekt sehr weit rechts vom Raumschiff weg ist, lassen wir es einfach
