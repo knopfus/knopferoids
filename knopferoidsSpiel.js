@@ -67,6 +67,21 @@ var Raumschiff = (function(x, y, winkel) {
         _daten.zustand = ZERSTÖRT;
     }
 
+    function _stoss(geschwindigkeitDesSubjekts, winkel) {
+        var v = _daten.geschwindigkeit.minus(geschwindigkeitDesSubjekts),
+            v_ = v.rotiertUm(-winkel);
+
+        if (v_.x < 0 && v.r > 1.5) {
+            _zerstört();
+        }
+
+        var v_neu = new Vektor(Math.max(v_.x, 0), 0),
+            vneu = v_neu.rotiertUm(winkel),
+            ovneu = vneu.plus(geschwindigkeitDesSubjekts);
+
+        _daten.geschwindigkeit = ovneu;        
+    }
+
     return {
         daten: _daten,
         bewege: _bewege,
@@ -78,7 +93,7 @@ var Raumschiff = (function(x, y, winkel) {
         stopRechtsDrehung: _stopRechtsDrehung,
         startGas: _startGas,
         stopGas: _stopGas,
-        zerstört: _zerstört
+        stoss: _stoss
     };
 });
 
@@ -92,9 +107,14 @@ var Asteroid = (function(daten) {
         _daten.winkel += _daten.geschwindigkeitWinkel;
     }
 
+    function _stoss() {
+        // passiert nix
+    }
+
     return {
         daten: _daten,
-        bewege: _bewege
+        bewege: _bewege,
+        stoss: _stoss
     };
 });
 
@@ -135,19 +155,24 @@ var Schuss = function() {
         }
     }
 
+    function _stoss(geschwindigkeitDesSubjekts, winkel) {
+        // noch passiert bei Schuss nix     
+    }
+
     return {
         daten: _daten,
         starte: _starte,
         lebt: _lebt,
-        bewege: _bewege
+        bewege: _bewege,
+        stoss: _stoss
     }
 };
 
-var zieheAn = function(asteroid, raumschiff) {
+var wechselWirken = function(subjekt, objekt) {
 
-    var m = asteroid.daten.masse,
+    var m = subjekt.daten.masse,
         maxAbstand = m * 10,
-        d = raumschiff.daten.ort.minus(asteroid.daten.ort),
+        d = objekt.daten.ort.minus(subjekt.daten.ort),
         G = 1;
 
     // Wenn maxAbstand in x oder y Achse schon überschritten ist, ist er es sowieso
@@ -157,19 +182,9 @@ var zieheAn = function(asteroid, raumschiff) {
     if (d.r > maxAbstand) { return; }
 
     // Auf Oberfläche aufgetroffen?
-    if (d.r - asteroid.daten.radius < 10) {
-        var v = raumschiff.daten.geschwindigkeit.minus(asteroid.daten.geschwindigkeit),
-            v_ = v.rotiertUm(-d.w);
-
-        if (v_.x < 0 && v.r > 1.5) {
-            raumschiff.zerstört();
-        }
-
-        var v_neu = new Vektor(Math.max(v_.x, 0), 0),
-            vneu = v_neu.rotiertUm(d.w),
-            ovneu = vneu.plus(asteroid.daten.geschwindigkeit);
-
-        raumschiff.daten.geschwindigkeit = ovneu;
+    if (d.r - subjekt.daten.radius < 10) {
+        objekt.stoss(subjekt.daten.geschwindigkeit, d.w);
+        subjekt.stoss(objekt.daten.geschwindigkeit, -d.w);
 
         return;
     }
@@ -179,7 +194,7 @@ var zieheAn = function(asteroid, raumschiff) {
     // die Richtung stimmt. Damit wäre es aber wieder nur noch umgekehrt proportional
     // also muss nochmals durch den Abstand geteilt werden.
     var g = d.skaliertUm(G * m / Math.pow(d.r, 2) / d.r);
-    raumschiff.daten.geschwindigkeit = raumschiff.daten.geschwindigkeit.minus(g);
+    objekt.daten.geschwindigkeit = objekt.daten.geschwindigkeit.minus(g);
 };
 
 function spieleTon(welcherTon) {
@@ -219,7 +234,14 @@ var Spiel = (function() {
         }
 
         for (asteroid of _asteroiden) {
-            zieheAn(asteroid, _raumschiff);
+            wechselWirken(asteroid, _raumschiff);
+
+            for (schuss of _schüsse) {
+                if (schuss.lebt()) {
+                    wechselWirken(asteroid, schuss);
+                }
+            }
+
             if (_raumschiff.daten.zustand == ZERSTÖRT) {
                 _status = GAME_OVER;
             }
