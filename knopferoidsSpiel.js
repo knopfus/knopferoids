@@ -57,6 +57,12 @@ var Raumschiff = (function(x, y, winkel) {
         if (_daten.gibtGas) { _beschleunige(); }
     }
 
+    function _schiesse() {
+        // "spiel" sollte jetzt bekannt sein. Etwas unschöne Programmierung...
+        var schussGeschwindigkeit = Vektor.vonWinkelUndRadius(_daten.winkel, 1);
+        spiel.schiesse(_daten.ort, _daten.geschwindigkeit.plus(schussGeschwindigkeit));
+    }
+
     function _zerstört() {
         _daten.zustand = ZERSTÖRT;
     }
@@ -65,6 +71,7 @@ var Raumschiff = (function(x, y, winkel) {
         daten: _daten,
         bewege: _bewege,
         fuehreAus: _fuehreAus,
+        schiesse: _schiesse,
         startLinksDrehung: _startLinksDrehung,
         stopLinksDrehung: _stopLinksDrehung,
         startRechtsDrehung: _startRechtsDrehung,
@@ -104,8 +111,36 @@ var ZufallsAsteroid = function(naheBeiX, naheBeiY) {
             radius: radius,
             masse: radius * radius * radius / 1000,
             geschwindigkeit: new Vektor(zufallsZahl(1), zufallsZahl(1)),
-            geschwindigkeitWinkel:  zufallsZahl(0.002)
+            geschwindigkeitWinkel: zufallsZahl(0.002)
         });
+};
+
+var Schuss = function() {
+    var _daten = { ort: undefined, geschwindigkeit: undefined, lebensdauer: 0 };
+
+    function _starte(ort, geschwindigkeit) {
+        _daten.ort = ort;
+        _daten.geschwindigkeit = geschwindigkeit;
+        _daten.lebensdauer = 500;
+    }
+
+    function _lebt() {
+        return _daten.lebensdauer > 0;
+    }
+
+    function _bewege() {
+        if (_lebt()) {
+            _daten.lebensdauer -= 1;
+            _daten.ort = _daten.ort.plus(_daten.geschwindigkeit);
+        }
+    }
+
+    return {
+        daten: _daten,
+        starte: _starte,
+        lebt: _lebt,
+        bewege: _bewege
+    }
 };
 
 var zieheAn = function(asteroid, raumschiff) {
@@ -147,14 +182,18 @@ var zieheAn = function(asteroid, raumschiff) {
     raumschiff.daten.geschwindigkeit = raumschiff.daten.geschwindigkeit.minus(g);
 };
 
+function spieleTon(welcherTon) {
+    new Audio(welcherTon + ".wav").play();
+}
+
 var Spiel = (function() {
 
     var _ausfuehrbareObjekte = [],
         _bewegbareObjekte = [],
         _raumschiff,
         _asteroiden = [],
+        _schüsse = [],
         _status = PAUSE,
-        asteroid,
         maximalerAbstandVomRaumschiff = 2000;
 
 
@@ -163,9 +202,15 @@ var Spiel = (function() {
     _bewegbareObjekte.push(_raumschiff);
 
     for (var i = 0; i < 50; i++) {
-        asteroid = ZufallsAsteroid(500, 200);
+        var asteroid = ZufallsAsteroid(500, 200);
         _asteroiden.push(asteroid);
         _bewegbareObjekte.push(asteroid);
+    }
+
+    for (var i = 0; i < 10; i++) {
+        var schuss = Schuss();
+        _schüsse.push(schuss);
+        _bewegbareObjekte.push(schuss);
     }
 
     function _weiter() {
@@ -180,10 +225,15 @@ var Spiel = (function() {
             }
         }
 
-        // Wenn Objekt sehr weit rechts vom Raumschiff weg ist, lassen wir es einfach
-        // vom gegenüberliegenden "Rand" wieder hineinfliegen.
         for (objekt of _bewegbareObjekte) {
-            objekt.bewege();
+            if (typeof objekt.lebt === 'undefined' || objekt.lebt()) {
+                objekt.bewege();
+            }
+        }
+
+        // Wenn ein Asteroid sehr weit rechts vom Raumschiff weg ist, lassen wir ihn einfach
+        // vom gegenüberliegenden "Rand" wieder hineinfliegen.
+        for (objekt of _asteroiden) {
             if (objekt.daten.ort.x - _raumschiff.daten.ort.x > maximalerAbstandVomRaumschiff) {
                 objekt.daten.ort = objekt.daten.ort.minus(new Vektor(2 * maximalerAbstandVomRaumschiff, 0));
             }
@@ -207,12 +257,24 @@ var Spiel = (function() {
         }
     }
 
+    function _schiesse(ort, geschwindigkeit) {
+        for (var schuss of _schüsse) {
+            if (!schuss.lebt()) {
+                schuss.starte(ort, geschwindigkeit);
+                spieleTon("schiessen");
+                return;
+            }
+        }
+    }
+
     return {
         status: function() { return _status; },
         raumschiff: _raumschiff,
         asteroiden: _asteroiden,
+        schüsse: _schüsse,
         pausierenOderWeitermachen: _pausierenOderWeitermachen,
-        weiter: _weiter
+        weiter: _weiter,
+        schiesse: _schiesse
     };
 });
 

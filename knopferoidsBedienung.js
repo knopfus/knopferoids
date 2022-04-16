@@ -5,6 +5,7 @@ var spielBedienung = {
     pfeilNachLinks:  [ spiel.raumschiff.startLinksDrehung,  spiel.raumschiff.stopLinksDrehung ],
     pfeilNachRechts: [ spiel.raumschiff.startRechtsDrehung, spiel.raumschiff.stopRechtsDrehung ],
     pfeilNachOben:   [ spiel.raumschiff.startGas,           spiel.raumschiff.stopGas ],
+    leertaste:       [ spiel.raumschiff.schiesse ],
     p:               [ function() {
                            spiel.pausierenOderWeitermachen();
                            spielDarsteller.stelleDar();
@@ -18,6 +19,7 @@ window.onkeydown = function(event) {
         case "ArrowLeft":  spielBedienung.pfeilNachLinks[0](); break;
         case "ArrowRight": spielBedienung.pfeilNachRechts[0](); break;
         case "ArrowUp":    spielBedienung.pfeilNachOben[0](); break;
+        case " ":          spielBedienung.leertaste[0](); break;
         case "p":          spielBedienung.p[0](); break;
     }
 };

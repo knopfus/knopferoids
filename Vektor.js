@@ -52,6 +52,10 @@ class Vektor {
         return new Vektor(this.x * faktor, this.y * faktor);
     }
 
+    einheit() {
+        return this.skaliertUm(1 / this.r);
+    }
+
     gleich(vektor) {
         return vektor.x == this.x && vektor.y == this.y;
     }

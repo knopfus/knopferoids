@@ -40,7 +40,13 @@ var RaumschiffDarsteller = (function(htmlElement, raumschiff) {
             10);
 
         _imgWennGas.style.visibility = _raumschiff.daten.gibtGas ? "visible" : "hidden";
-        _imgWennZerstört.style.visibility = _raumschiff.daten.zustand == ZERSTÖRT ? "visible" : "hidden";
+        if (_raumschiff.daten.zustand == ZERSTÖRT) {
+            _imgWennZerstört.style.visibility = "visible";
+            spieleTon("explosion");
+        } else {
+            _imgWennZerstört.style.visibility = "hidden";
+        }
+
     }
 
     return {
@@ -81,6 +87,24 @@ var AsteroidDarsteller = (function(htmlElement, asteroid) {
     };
 });
 
+var SchussDarsteller = (function(htmlElement, schuss) {
+    var _htmlElement = htmlElement,
+        _schuss = schuss;
+
+    function _stelleDar() {
+        if (_schuss.lebt()) {
+            platziereElement(_htmlElement, _schuss.daten.ort.x, _schuss.daten.ort.y);
+            _htmlElement.style.visibility = "visible";
+        } else {
+            _htmlElement.style.visibility = "hidden";
+        }
+    }
+
+    return {
+        stelleDar: _stelleDar
+    };
+});
+
 var StatusDarsteller = (function(htmlElement, spiel) {
     var _htmlElement = htmlElement,
         _displayDefault = htmlElement.style.display;
@@ -104,15 +128,17 @@ var StatusDarsteller = (function(htmlElement, spiel) {
 
 var Spieldarsteller = (function(document, spiel) {
 
-    var _darstellbareObjekte = [], kamera = new Vektor(0, 0),
+    var _darstellbareObjekte = [],
+        kamera = new Vektor(0, 0),
         weltraumElement = document.getElementById("Weltraum"),
-        asteroidElement, asteroidTemplateElement, i;
+        asteroidElement,
+        asteroidTemplateElement;
 
     _darstellbareObjekte.push(
         RaumschiffDarsteller(document.getElementById("Raumschiff"), spiel.raumschiff)
     );
 
-    for (asteroid of spiel.asteroiden) {
+    for (var asteroid of spiel.asteroiden) {
         if (!asteroidElement) {
             // Für den ersten Asteroiden nehmen wir das originale HTML Element
             asteroidElement = document.getElementById("Asteroid0");
@@ -124,6 +150,15 @@ var Spieldarsteller = (function(document, spiel) {
         _darstellbareObjekte.push(
             AsteroidDarsteller(asteroidElement, asteroid)
         );
+    }
+
+    var schussElementVorlage = document.getElementById("Schuss-Vorlage");
+
+    for (var schuss of spiel.schüsse) {
+        var schussElement = schussElementVorlage.cloneNode(true);
+        schussElement.removeAttribute("id");
+        schussElementVorlage.parentElement.appendChild(schussElement);
+        _darstellbareObjekte.push(new SchussDarsteller(schussElement, schuss));
     }
 
     _darstellbareObjekte.push(
@@ -148,7 +183,6 @@ var Spieldarsteller = (function(document, spiel) {
         stelleDar: _stelleDar
     };
 });
-
 
 
 var spielDarsteller = Spieldarsteller(document, spiel);
