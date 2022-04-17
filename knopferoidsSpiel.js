@@ -15,7 +15,9 @@ var Raumschiff = (function(x, y, winkel) {
         drehtNachLinks: false,
         drehtNachRechts: false,
         gibtGas: false,
-        zustand: WIE_NEU
+        zustand: WIE_NEU,
+        masse: 100,
+        radius: 10
     };
 
     function _startLinksDrehung() {
@@ -59,8 +61,12 @@ var Raumschiff = (function(x, y, winkel) {
 
     function _schiesse() {
         // "spiel" sollte jetzt bekannt sein. Etwas unschöne Programmierung...
-        var schussGeschwindigkeit = Vektor.vonWinkelUndRadius(_daten.winkel, 1);
-        spiel.schiesse(_daten.ort, _daten.geschwindigkeit.plus(schussGeschwindigkeit));
+        var schussGeschwindigkeit = Vektor.vonWinkelUndRadius(_daten.winkel, 1),
+            abstand = Vektor.vonWinkelUndRadius(_daten.winkel, _daten.radius);
+        spiel.schiesse(
+            _daten.ort.plus(abstand),
+            _daten.geschwindigkeit.plus(schussGeschwindigkeit)
+        );
     }
 
     function _zerstört() {
@@ -119,11 +125,11 @@ var Asteroid = (function(daten) {
 });
 
 var ZufallsAsteroid = function(naheBeiX, naheBeiY) {
-    function zufallsZahl(maximalerAbstand) {
-        return (Math.random() * 2 - 1) * maximalerAbstand;
+    function zufallsZahl(max) {
+        return (Math.random() * 2 - 1) * max;
     }
 
-    var radius = zufallsZahl(50) + 50
+    var radius = zufallsZahl(50) + 50;
 
     return Asteroid({
             ort: new Vektor(naheBeiX + zufallsZahl(4000), naheBeiY + zufallsZahl(4000)),
@@ -136,7 +142,13 @@ var ZufallsAsteroid = function(naheBeiX, naheBeiY) {
 };
 
 var Schuss = function() {
-    var _daten = { ort: undefined, geschwindigkeit: undefined, lebensdauer: 0 };
+    var _daten = {
+        ort: undefined,
+        geschwindigkeit: undefined,
+        lebensdauer: 0,
+        masse: 1,
+        radius: 1
+    };
 
     function _starte(ort, geschwindigkeit) {
         _daten.ort = ort;
@@ -156,7 +168,8 @@ var Schuss = function() {
     }
 
     function _stoss(geschwindigkeitDesSubjekts, winkel) {
-        // noch passiert bei Schuss nix     
+        _daten.lebensdauer = 0; 
+        spieleTon("Schuss"); 
     }
 
     return {
@@ -244,6 +257,12 @@ var Spiel = (function() {
 
             if (_raumschiff.daten.zustand == ZERSTÖRT) {
                 _status = GAME_OVER;
+            }
+        }
+
+        for (schuss of _schüsse) {
+            if (schuss.lebt()) {
+                wechselWirken(schuss, _raumschiff);
             }
         }
 
