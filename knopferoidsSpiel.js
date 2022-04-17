@@ -16,7 +16,7 @@ var Raumschiff = (function(x, y, winkel) {
         drehtNachRechts: false,
         gibtGas: false,
         zustand: WIE_NEU,
-        masse: 100,
+        masse: 1,
         radius: 10
     };
 
@@ -62,19 +62,22 @@ var Raumschiff = (function(x, y, winkel) {
     function _schiesse() {
         // "spiel" sollte jetzt bekannt sein. Etwas unschöne Programmierung...
         var schussGeschwindigkeit = Vektor.vonWinkelUndRadius(_daten.winkel, 1),
-            abstand = Vektor.vonWinkelUndRadius(_daten.winkel, _daten.radius);
+            abstand = Vektor.vonWinkelUndRadius(_daten.winkel, _daten.radius * 3);
+
         spiel.schiesse(
             _daten.ort.plus(abstand),
             _daten.geschwindigkeit.plus(schussGeschwindigkeit)
         );
+
+        _daten.geschwindigkeit = _daten.geschwindigkeit.minus(schussGeschwindigkeit.skaliertUm(0.3));
     }
 
     function _zerstört() {
         _daten.zustand = ZERSTÖRT;
     }
 
-    function _stoss(geschwindigkeitDesSubjekts, winkel) {
-        var v = _daten.geschwindigkeit.minus(geschwindigkeitDesSubjekts),
+    function _stoss(subjekt, winkel) {
+        var v = _daten.geschwindigkeit.minus(subjekt.daten.geschwindigkeit),
             v_ = v.rotiertUm(-winkel);
 
         if (v_.x < 0 && v.r > 1.5) {
@@ -83,9 +86,13 @@ var Raumschiff = (function(x, y, winkel) {
 
         var v_neu = new Vektor(Math.max(v_.x, 0), 0),
             vneu = v_neu.rotiertUm(winkel),
-            ovneu = vneu.plus(geschwindigkeitDesSubjekts);
+            ovneu = vneu.plus(subjekt.daten.geschwindigkeit);
 
         _daten.geschwindigkeit = ovneu;        
+    }
+
+    function _schussSchlägtEin() {
+        _zerstört();
     }
 
     return {
@@ -99,7 +106,8 @@ var Raumschiff = (function(x, y, winkel) {
         stopRechtsDrehung: _stopRechtsDrehung,
         startGas: _startGas,
         stopGas: _stopGas,
-        stoss: _stoss
+        stoss: _stoss,
+        schussSchlägtEin: _schussSchlägtEin
     };
 });
 
@@ -113,14 +121,17 @@ var Asteroid = (function(daten) {
         _daten.winkel += _daten.geschwindigkeitWinkel;
     }
 
-    function _stoss() {
-        // passiert nix
+    function _schussSchlägtEin() {
+        if (_daten.radius > 1) {
+            _daten.radius -= 2;
+            _daten.masse = Math.pow(_daten.radius / 10, 3)
+        }
     }
 
     return {
         daten: _daten,
         bewege: _bewege,
-        stoss: _stoss
+        schussSchlägtEin: _schussSchlägtEin
     };
 });
 
@@ -135,7 +146,7 @@ var ZufallsAsteroid = function(naheBeiX, naheBeiY) {
             ort: new Vektor(naheBeiX + zufallsZahl(4000), naheBeiY + zufallsZahl(4000)),
             winkel: zufallsZahl(180),
             radius: radius,
-            masse: radius * radius * radius / 1000,
+            masse: Math.pow(radius / 10, 3),
             geschwindigkeit: new Vektor(zufallsZahl(1), zufallsZahl(1)),
             geschwindigkeitWinkel: zufallsZahl(0.002)
         });
@@ -167,9 +178,10 @@ var Schuss = function() {
         }
     }
 
-    function _stoss(geschwindigkeitDesSubjekts, winkel) {
-        _daten.lebensdauer = 0; 
-        spieleTon("Schuss"); 
+    function _stoss(subjekt, winkel) {
+        _daten.lebensdauer = 0;
+        spieleTon("Schuss");
+        subjekt.schussSchlägtEin();
     }
 
     return {
@@ -196,8 +208,7 @@ var wechselWirken = function(subjekt, objekt) {
 
     // Auf Oberfläche aufgetroffen?
     if (d.r - subjekt.daten.radius < 10) {
-        objekt.stoss(subjekt.daten.geschwindigkeit, d.w);
-        subjekt.stoss(objekt.daten.geschwindigkeit, -d.w);
+        objekt.stoss(subjekt, d.w);
 
         return;
     }
@@ -262,7 +273,7 @@ var Spiel = (function() {
 
         for (schuss of _schüsse) {
             if (schuss.lebt()) {
-                wechselWirken(schuss, _raumschiff);
+                wechselWirken(_raumschiff, schuss);
             }
         }
 
