@@ -21,6 +21,7 @@ window.onkeydown = function(event) {
         case "ArrowUp":    spielBedienung.pfeilNachOben[0](); break;
         case " ":          spielBedienung.leertaste[0](); break;
         case "p":          spielBedienung.p[0](); break;
+        case "@":          spiel.schnellModusAn(); break;
     }
 };
 

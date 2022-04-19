@@ -42,6 +42,7 @@ var RaumschiffDarsteller = (function(htmlElement, raumschiff) {
         _imgWennGas.style.visibility = _raumschiff.daten.gibtGas ? "visible" : "hidden";
         if (_raumschiff.daten.zustand == ZERSTÖRT) {
             _imgWennZerstört.style.visibility = "visible";
+            _imgWennZerstört.setAttribute("src", _imgWennZerstört.getAttribute("src"));
             spieleTon("explosion");
         } else {
             _imgWennZerstört.style.visibility = "hidden";
@@ -73,13 +74,35 @@ var AsteroidDarsteller = (function(htmlElement, asteroid) {
     var _htmlElement = htmlElement,
         _imgElement = _htmlElement.querySelector("img"),
         _spanElement = _htmlElement.querySelector("span"),
-        _asteroid = asteroid;
+        _imgWennZerstört = htmlElement.querySelector(".Asteroid-explode"),
+        _asteroid = asteroid,
+        _explodiertUm = 0,
+        _verschwundenUm;
 
     function _stelleDar() {
+        if (_verschwundenUm) { return; }
+
+        if (_explodiertUm) {
+            if (Date.now() - _explodiertUm > 2000) {
+                _verschwundenUm = Date.now();
+                _imgWennZerstört.style.display = "none";
+                _htmlElement.style.display = "none";
+            }
+            return;
+        }
+
         _imgElement.style.width = asteroid.daten.radius * 2 + "px";
         _spanElement.innerText = Math.floor(_asteroid.daten.geschwindigkeitNachRechts*10) + "," +
             Math.floor(_asteroid.daten.geschwindigkeitNachUnten*10);
         platziereElement(_htmlElement, _asteroid.daten.ort.x, _asteroid.daten.ort.y, _asteroid.daten.winkel);
+
+        if (_asteroid.daten.zustand == ZERSTÖRT) {
+            _imgElement.style.display = "none";
+            _imgWennZerstört.style.visibility = "visible";
+            _imgWennZerstört.setAttribute("src", _imgWennZerstört.getAttribute("src"));
+            spieleTon("explosion");
+            _explodiertUm = Date.now();
+        }
     }
 
     return {
@@ -115,8 +138,9 @@ var StatusDarsteller = (function(htmlElement, spiel) {
         } else {
             _htmlElement.style.display = _displayDefault;
             switch (spiel.status()) {
-                case PAUSE: _htmlElement.innerText = "Taste P drücken für Pause/Start"; break;
+                case PAUSE: _htmlElement.innerText = "Rette die Erde vor einschlagenden Asteroiden! Drücke P für Pause/Start"; break;
                 case GAME_OVER: _htmlElement.innerHTML = "Aus und vorbei!<p/><a href='javascript:location.reload()'>Neustart</a>"; break;
+                case GEWONNEN: _htmlElement.innerHTML = "Du hast die Erde gerettet!<p/><a href='javascript:location.reload()'>Neustart</a>"; break;
             }
         }
     }

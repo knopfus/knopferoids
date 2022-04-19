@@ -3,8 +3,15 @@ const NORD = Math.PI / 2;
 const AM_LAUFEN = 0;
 const PAUSE = 10;
 const GAME_OVER = 20;
+const GEWONNEN = 30;
 const WIE_NEU = 100;
 const ZERSTÖRT = 0;
+
+const ANZAHL_ASTEROIDEN = 20;
+const START_X = 500, START_Y = 200;
+const MAX_ABSTAND_RAUMSCHIFF = 2000;
+const MAX_GRÖSSE = 120;
+const MIN_GRÖSSE = 10;
 
 var Raumschiff = (function(x, y, winkel) {
 
@@ -121,16 +128,30 @@ var Asteroid = (function(daten) {
         _daten.winkel += _daten.geschwindigkeitWinkel;
     }
 
+    function _lebt() {
+        return _daten.zustand != ZERSTÖRT;
+    }
+
+    function _zerstört() {
+        _daten.zustand = ZERSTÖRT;
+    }
+
     function _schussSchlägtEin() {
-        if (_daten.radius > 1) {
+        if (_daten.radius >= MIN_GRÖSSE) {
+            if (spiel.schnellModus()) {_daten.radius -= 8; }
             _daten.radius -= 2;
             _daten.masse = Math.pow(_daten.radius / 10, 3)
+        }
+
+        if (_daten.radius < MIN_GRÖSSE) {
+            _zerstört();
         }
     }
 
     return {
         daten: _daten,
         bewege: _bewege,
+        lebt: _lebt,
         schussSchlägtEin: _schussSchlägtEin
     };
 });
@@ -140,15 +161,16 @@ var ZufallsAsteroid = function(naheBeiX, naheBeiY) {
         return (Math.random() * 2 - 1) * max;
     }
 
-    var radius = zufallsZahl(50) + 50;
+    var radius = zufallsZahl((MAX_GRÖSSE - MIN_GRÖSSE) / 2) + (MAX_GRÖSSE - MIN_GRÖSSE) / 2 + MIN_GRÖSSE;
 
     return Asteroid({
-            ort: new Vektor(naheBeiX + zufallsZahl(4000), naheBeiY + zufallsZahl(4000)),
+            ort: new Vektor(naheBeiX + zufallsZahl(MAX_ABSTAND_RAUMSCHIFF * 2), naheBeiY + zufallsZahl(MAX_ABSTAND_RAUMSCHIFF * 2)),
             winkel: zufallsZahl(180),
             radius: radius,
             masse: Math.pow(radius / 10, 3),
             geschwindigkeit: new Vektor(zufallsZahl(1), zufallsZahl(1)),
-            geschwindigkeitWinkel: zufallsZahl(0.002)
+            geschwindigkeitWinkel: zufallsZahl(0.002),
+            zustand: WIE_NEU
         });
 };
 
@@ -233,15 +255,15 @@ var Spiel = (function() {
         _asteroiden = [],
         _schüsse = [],
         _status = PAUSE,
-        maximalerAbstandVomRaumschiff = 2000;
+        _schnellModus = false;
 
 
-    _raumschiff = Raumschiff(500, 200, NORD);
+    _raumschiff = Raumschiff(START_X, START_Y, NORD);
     _ausfuehrbareObjekte.push(_raumschiff);
     _bewegbareObjekte.push(_raumschiff);
 
-    for (var i = 0; i < 50; i++) {
-        var asteroid = ZufallsAsteroid(500, 200);
+    for (var i = 0; i < ANZAHL_ASTEROIDEN; i++) {
+        var asteroid = ZufallsAsteroid(START_X, START_Y);
         _asteroiden.push(asteroid);
         _bewegbareObjekte.push(asteroid);
     }
@@ -257,18 +279,27 @@ var Spiel = (function() {
             objekt.fuehreAus();
         }
 
-        for (asteroid of _asteroiden) {
-            wechselWirken(asteroid, _raumschiff);
+        var mindestensEinAsteroidLebt = false;
 
-            for (schuss of _schüsse) {
-                if (schuss.lebt()) {
-                    wechselWirken(asteroid, schuss);
+        for (asteroid of _asteroiden) {
+            if (asteroid.lebt()) {
+                mindestensEinAsteroidLebt = true;
+                wechselWirken(asteroid, _raumschiff);
+
+                for (schuss of _schüsse) {
+                    if (schuss.lebt()) {
+                        wechselWirken(asteroid, schuss);
+                    }
                 }
             }
 
             if (_raumschiff.daten.zustand == ZERSTÖRT) {
                 _status = GAME_OVER;
             }
+        }
+
+        if (!mindestensEinAsteroidLebt) {
+            _status = GEWONNEN;
         }
 
         for (schuss of _schüsse) {
@@ -286,17 +317,17 @@ var Spiel = (function() {
         // Wenn ein Asteroid sehr weit rechts vom Raumschiff weg ist, lassen wir ihn einfach
         // vom gegenüberliegenden "Rand" wieder hineinfliegen.
         for (objekt of _asteroiden) {
-            if (objekt.daten.ort.x - _raumschiff.daten.ort.x > maximalerAbstandVomRaumschiff) {
-                objekt.daten.ort = objekt.daten.ort.minus(new Vektor(2 * maximalerAbstandVomRaumschiff, 0));
+            if (objekt.daten.ort.x - _raumschiff.daten.ort.x > MAX_ABSTAND_RAUMSCHIFF) {
+                objekt.daten.ort = objekt.daten.ort.minus(new Vektor(2 * MAX_ABSTAND_RAUMSCHIFF, 0));
             }
-            if (objekt.daten.ort.x - _raumschiff.daten.ort.x < -maximalerAbstandVomRaumschiff) {
-                objekt.daten.ort = objekt.daten.ort.plus(new Vektor(2 * maximalerAbstandVomRaumschiff, 0));
+            if (objekt.daten.ort.x - _raumschiff.daten.ort.x < -MAX_ABSTAND_RAUMSCHIFF) {
+                objekt.daten.ort = objekt.daten.ort.plus(new Vektor(2 * MAX_ABSTAND_RAUMSCHIFF, 0));
             }
-            if (objekt.daten.ort.y - _raumschiff.daten.ort.y > maximalerAbstandVomRaumschiff) {
-                objekt.daten.ort = objekt.daten.ort.minus(new Vektor(0, 2 * maximalerAbstandVomRaumschiff));
+            if (objekt.daten.ort.y - _raumschiff.daten.ort.y > MAX_ABSTAND_RAUMSCHIFF) {
+                objekt.daten.ort = objekt.daten.ort.minus(new Vektor(0, 2 * MAX_ABSTAND_RAUMSCHIFF));
             }
-            if (objekt.daten.ort.y - _raumschiff.daten.ort.y < -maximalerAbstandVomRaumschiff) {
-                objekt.daten.ort = objekt.daten.ort.plus(new Vektor(0, 2 * maximalerAbstandVomRaumschiff));
+            if (objekt.daten.ort.y - _raumschiff.daten.ort.y < -MAX_ABSTAND_RAUMSCHIFF) {
+                objekt.daten.ort = objekt.daten.ort.plus(new Vektor(0, 2 * MAX_ABSTAND_RAUMSCHIFF));
             }
         }
     };
@@ -326,7 +357,9 @@ var Spiel = (function() {
         schüsse: _schüsse,
         pausierenOderWeitermachen: _pausierenOderWeitermachen,
         weiter: _weiter,
-        schiesse: _schiesse
+        schiesse: _schiesse,
+        schnellModusAn: function() { _schnellModus = true; },
+        schnellModus: function() { return _schnellModus; }
     };
 });
 

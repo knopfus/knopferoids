@@ -3,11 +3,15 @@ body { background-color: black; overflow: hidden; }
 #Weltraum { position:absolute; }
 
 .Ding { position:absolute; }
+.Ding, .Ding * { mix-blend-mode: screen; }
 
+#Raumschiff { z-index: 1000; }
 #Raumschiff-off, #Raumschiff-on { width: 20px; }
 #Raumschiff-off { position: absolute; }
 #Raumschiff-on { position: relative; visibility: hidden; }
-#Raumschiff-explode { position: absolute; transform: translate(-50%, -50%);visibility: hidden; }
+#Raumschiff-explode { position: absolute; transform: translate(-50%, -50%); visibility: hidden; }
+
+.Asteroid-explode { position: absolute; transform: translate(-50%, -50%);visibility: hidden; }
 
 .ReferenzPunkt { width: 0px; height: 0px; border: 1px solid red; display: none; }
 
