@@ -1,35 +1,23 @@
 
-var spielBedienung = {
-    //                 Wenn Taste gedrükt wird:             Wenn Taste losgelassen wird:
-    //                 -------------------------------------------------------------------------
-    pfeilNachLinks:  [ spiel.raumschiff.startLinksDrehung,  spiel.raumschiff.stopLinksDrehung ],
-    pfeilNachRechts: [ spiel.raumschiff.startRechtsDrehung, spiel.raumschiff.stopRechtsDrehung ],
-    pfeilNachOben:   [ spiel.raumschiff.startGas,           spiel.raumschiff.stopGas ],
-    leertaste:       [ spiel.raumschiff.schiesse ],
-    p:               [ function() {
-                           spiel.pausierenOderWeitermachen();
-                           spielDarsteller.stelleDar();
-                        } ]
-};
-
-
-
 window.onkeydown = function(event) {
     switch (event.key) {
-        case "ArrowLeft":  spielBedienung.pfeilNachLinks[0](); break;
-        case "ArrowRight": spielBedienung.pfeilNachRechts[0](); break;
-        case "ArrowUp":    spielBedienung.pfeilNachOben[0](); break;
-        case " ":          spielBedienung.leertaste[0](); break;
-        case "p":          spielBedienung.p[0](); break;
+        case "ArrowLeft":  spiel.raumschiff.startLinksDrehung(); break;
+        case "ArrowRight": spiel.raumschiff.startRechtsDrehung(); break;
+        case "ArrowUp":    spiel.raumschiff.startGas(); break;
+        case " ":          spiel.raumschiff.schiesse(); break;
+        case "p":          spiel.pausierenOderWeitermachen();
+                           spielDarsteller.stelleDar();
+                           break;
+        case "r":          if (spiel.status != AM_LAUFEN) { location.reload(); } break;
         case "@":          spiel.schnellModusAn(); break;
     }
 };
 
 window.onkeyup = function(event) {
     switch (event.key) {
-        case "ArrowLeft":  spielBedienung.pfeilNachLinks[1](); break;
-        case "ArrowRight": spielBedienung.pfeilNachRechts[1](); break;
-        case "ArrowUp":    spielBedienung.pfeilNachOben[1](); break;
+        case "ArrowLeft":  spiel.raumschiff.stopLinksDrehung(); break;
+        case "ArrowRight": spiel.raumschiff.stopRechtsDrehung(); break;
+        case "ArrowUp":    spiel.raumschiff.stopGas(); break;
     }
 };
 
@@ -38,7 +26,7 @@ spiel.weiter();
 spielDarsteller.stelleDar();
 
 (function wiederhole() { window.setTimeout(function() {
-    if (spiel.status() == AM_LAUFEN) {
+    if (spiel.status == AM_LAUFEN) {
         spiel.weiter();
         spielDarsteller.stelleDar();
     }

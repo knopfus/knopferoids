@@ -19,15 +19,18 @@ body { background-color: black; overflow: hidden; }
 
 .Schuss { width: 2px; height: 2px; }
 .Schuss > img { width: 100%; height: 100%; }
-#SchussVorlage { visibility: hidden; }
+#Schuss-Vorlage { visibility: hidden; }
 
-#Status, #Status * {
+#Status {
     text-align: center;
-    color: red;
     font-family: Courier;
     font-size: 1em;
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+}
+
+#Status, #Status > * {
+    color: red;
 }

@@ -133,14 +133,14 @@ var StatusDarsteller = (function(htmlElement, spiel) {
         _displayDefault = htmlElement.style.display;
 
     function _stelleDar() {
-        if (spiel.status() == AM_LAUFEN) {
+        if (spiel.status == AM_LAUFEN) {
             _htmlElement.style.display = "none";
         } else {
             _htmlElement.style.display = _displayDefault;
-            switch (spiel.status()) {
+            switch (spiel.status) {
                 case PAUSE: _htmlElement.innerText = "Rette die Erde vor einschlagenden Asteroiden! Drücke P für Pause/Start"; break;
-                case GAME_OVER: _htmlElement.innerHTML = "Aus und vorbei!<p/><a href='javascript:location.reload()'>Neustart</a>"; break;
-                case GEWONNEN: _htmlElement.innerHTML = "Du hast die Erde gerettet!<p/><a href='javascript:location.reload()'>Neustart</a>"; break;
+                case GAME_OVER: _htmlElement.innerHTML = "Aus und vorbei!<br/><a href='javascript:location.reload()'>r für Neustart</a>"; break;
+                case GEWONNEN: _htmlElement.innerHTML = "Du hast die Erde gerettet!<br/>r für <a href='javascript:location.reload()'>Neustart</a>"; break;
             }
         }
     }

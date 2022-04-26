@@ -13,157 +13,140 @@ const MAX_ABSTAND_RAUMSCHIFF = 2000;
 const MAX_GRÖSSE = 120;
 const MIN_GRÖSSE = 10;
 
-var Raumschiff = (function(x, y, winkel) {
 
-    var _daten = {
-        ort: new Vektor(x, y),
-        winkel: winkel,
-        geschwindigkeit: new Vektor(0, 0),
-        drehtNachLinks: false,
-        drehtNachRechts: false,
-        gibtGas: false,
-        zustand: WIE_NEU,
-        masse: 1,
-        radius: 10
-    };
+class Raumschiff {
 
-    function _startLinksDrehung() {
-        _daten.drehtNachLinks = true;
+    constructor(x, y, winkel) {
+        this.daten = {
+            ort: new Vektor(x, y),
+            winkel: winkel,
+            geschwindigkeit: new Vektor(0, 0),
+            drehtNachLinks: false,
+            drehtNachRechts: false,
+            gibtGas: false,
+            zustand: WIE_NEU,
+            masse: 1,
+            radius: 10
+        };
     }
 
-    function _stopLinksDrehung() {
-        _daten.drehtNachLinks = false;
+    startLinksDrehung() {
+        this.daten.drehtNachLinks = true;
     }
 
-    function _startRechtsDrehung() {
-        _daten.drehtNachRechts = true;
+    stopLinksDrehung() {
+        this.daten.drehtNachLinks = false;
     }
 
-    function _stopRechtsDrehung() {
-        _daten.drehtNachRechts = false;
+    startRechtsDrehung() {
+        this.daten.drehtNachRechts = true;
     }
 
-    function _startGas() {
-        _daten.gibtGas = true;
+    stopRechtsDrehung() {
+        this.daten.drehtNachRechts = false;
     }
 
-    function _stopGas() {
-        _daten.gibtGas = false;
+    startGas() {
+        this.daten.gibtGas = true;
     }
 
-    function _beschleunige() {
-        var beschleunigung = Vektor.vonWinkelUndRadius(_daten.winkel, 0.1);
-        _daten.geschwindigkeit = _daten.geschwindigkeit.plus(beschleunigung);
+    stopGas() {
+        this.daten.gibtGas = false;
     }
 
-    function _bewege() {
-        _daten.ort = _daten.ort.plus(_daten.geschwindigkeit);
+    beschleunige() {
+        var beschleunigung = Vektor.vonWinkelUndRadius(this.daten.winkel, 0.1);
+        this.daten.geschwindigkeit = this.daten.geschwindigkeit.plus(beschleunigung);
     }
 
-    function _fuehreAus() {
-        if (_daten.drehtNachLinks) { _daten.winkel += 0.1; }
-        if (_daten.drehtNachRechts) { _daten.winkel -= 0.1; }
-        if (_daten.gibtGas) { _beschleunige(); }
+    bewege() {
+        this.daten.ort = this.daten.ort.plus(this.daten.geschwindigkeit);
     }
 
-    function _schiesse() {
+    fuehreAus() {
+        if (this.daten.drehtNachLinks) { this.daten.winkel += 0.1; }
+        if (this.daten.drehtNachRechts) { this.daten.winkel -= 0.1; }
+        if (this.daten.gibtGas) { this.beschleunige(); }
+    }
+
+    schiesse() {
         // "spiel" sollte jetzt bekannt sein. Etwas unschöne Programmierung...
-        var schussGeschwindigkeit = Vektor.vonWinkelUndRadius(_daten.winkel, 1),
-            abstand = Vektor.vonWinkelUndRadius(_daten.winkel, _daten.radius * 3);
+        var schussGeschwindigkeit = Vektor.vonWinkelUndRadius(this.daten.winkel, 1),
+            abstand = Vektor.vonWinkelUndRadius(this.daten.winkel, this.daten.radius * 3);
 
         spiel.schiesse(
-            _daten.ort.plus(abstand),
-            _daten.geschwindigkeit.plus(schussGeschwindigkeit)
+            this.daten.ort.plus(abstand),
+            this.daten.geschwindigkeit.plus(schussGeschwindigkeit)
         );
 
-        _daten.geschwindigkeit = _daten.geschwindigkeit.minus(schussGeschwindigkeit.skaliertUm(0.3));
+        this.daten.geschwindigkeit = this.daten.geschwindigkeit.minus(schussGeschwindigkeit.skaliertUm(0.3));
     }
 
-    function _zerstört() {
-        _daten.zustand = ZERSTÖRT;
+    zerstört() {
+        this.daten.zustand = ZERSTÖRT;
     }
 
-    function _stoss(subjekt, winkel) {
-        var v = _daten.geschwindigkeit.minus(subjekt.daten.geschwindigkeit),
+    stoss(subjekt, winkel) {
+        var v = this.daten.geschwindigkeit.minus(subjekt.daten.geschwindigkeit),
             v_ = v.rotiertUm(-winkel);
 
         if (v_.x < 0 && v.r > 1.5) {
-            _zerstört();
+            this.zerstört();
         }
 
         var v_neu = new Vektor(Math.max(v_.x, 0), 0),
             vneu = v_neu.rotiertUm(winkel),
             ovneu = vneu.plus(subjekt.daten.geschwindigkeit);
 
-        _daten.geschwindigkeit = ovneu;        
+        this.daten.geschwindigkeit = ovneu;        
     }
 
-    function _schussSchlägtEin() {
-        _zerstört();
+    schussSchlägtEin() {
+        this.zerstört();
+    }
+}
+
+
+class Asteroid {
+
+    constructor(daten) {
+        this.daten = daten;
     }
 
-    return {
-        daten: _daten,
-        bewege: _bewege,
-        fuehreAus: _fuehreAus,
-        schiesse: _schiesse,
-        startLinksDrehung: _startLinksDrehung,
-        stopLinksDrehung: _stopLinksDrehung,
-        startRechtsDrehung: _startRechtsDrehung,
-        stopRechtsDrehung: _stopRechtsDrehung,
-        startGas: _startGas,
-        stopGas: _stopGas,
-        stoss: _stoss,
-        schussSchlägtEin: _schussSchlägtEin
-    };
-});
-
-
-var Asteroid = (function(daten) {
-
-    var _daten = daten;
-
-    function _bewege() {
-        _daten.ort = _daten.ort.plus(_daten.geschwindigkeit);
-        _daten.winkel += _daten.geschwindigkeitWinkel;
+    bewege() {
+        this.daten.ort = this.daten.ort.plus(this.daten.geschwindigkeit);
+        this.daten.winkel += this.daten.geschwindigkeitWinkel;
     }
 
-    function _lebt() {
-        return _daten.zustand != ZERSTÖRT;
+    lebt() {
+        return this.daten.zustand != ZERSTÖRT;
     }
 
-    function _zerstört() {
-        _daten.zustand = ZERSTÖRT;
+    zerstört() {
+        this.daten.zustand = ZERSTÖRT;
     }
 
-    function _schussSchlägtEin() {
-        if (_daten.radius >= MIN_GRÖSSE) {
-            if (spiel.schnellModus()) {_daten.radius -= 8; }
-            _daten.radius -= 2;
-            _daten.masse = Math.pow(_daten.radius / 10, 3)
+    schussSchlägtEin() {
+        if (this.daten.radius >= MIN_GRÖSSE) {
+            if (spiel.schnellModus()) {this.daten.radius -= 8; }
+            this.daten.radius -= 2;
+            this.daten.masse = Math.pow(this.daten.radius / 10, 3)
         }
 
-        if (_daten.radius < MIN_GRÖSSE) {
-            _zerstört();
+        if (this.daten.radius < MIN_GRÖSSE) {
+            this.zerstört();
         }
     }
+}
 
-    return {
-        daten: _daten,
-        bewege: _bewege,
-        lebt: _lebt,
-        schussSchlägtEin: _schussSchlägtEin
-    };
-});
-
-var ZufallsAsteroid = function(naheBeiX, naheBeiY) {
+var neuerZufallsAsteroid = function(naheBeiX, naheBeiY) {
     function zufallsZahl(max) {
         return (Math.random() * 2 - 1) * max;
     }
 
     var radius = zufallsZahl((MAX_GRÖSSE - MIN_GRÖSSE) / 2) + (MAX_GRÖSSE - MIN_GRÖSSE) / 2 + MIN_GRÖSSE;
 
-    return Asteroid({
+    return new Asteroid({
             ort: new Vektor(naheBeiX + zufallsZahl(MAX_ABSTAND_RAUMSCHIFF * 2), naheBeiY + zufallsZahl(MAX_ABSTAND_RAUMSCHIFF * 2)),
             winkel: zufallsZahl(180),
             radius: radius,
@@ -174,48 +157,42 @@ var ZufallsAsteroid = function(naheBeiX, naheBeiY) {
         });
 };
 
-var Schuss = function() {
-    var _daten = {
-        ort: undefined,
-        geschwindigkeit: undefined,
-        lebensdauer: 0,
-        masse: 1,
-        radius: 1
-    };
-
-    function _starte(ort, geschwindigkeit) {
-        _daten.ort = ort;
-        _daten.geschwindigkeit = geschwindigkeit;
-        _daten.lebensdauer = 500;
+class Schuss {
+    constructor() {
+        this.daten = {
+            ort: undefined,
+            geschwindigkeit: undefined,
+            lebensdauer: 0,
+            masse: 1,
+            radius: 1
+        };
     }
 
-    function _lebt() {
-        return _daten.lebensdauer > 0;
+    starte(ort, geschwindigkeit) {
+        this.daten.ort = ort;
+        this.daten.geschwindigkeit = geschwindigkeit;
+        this.daten.lebensdauer = 500;
     }
 
-    function _bewege() {
-        if (_lebt()) {
-            _daten.lebensdauer -= 1;
-            _daten.ort = _daten.ort.plus(_daten.geschwindigkeit);
+    lebt() {
+        return this.daten.lebensdauer > 0;
+    }
+
+    bewege() {
+        if (this.lebt()) {
+            this.daten.lebensdauer -= 1;
+            this.daten.ort = this.daten.ort.plus(this.daten.geschwindigkeit);
         }
     }
 
-    function _stoss(subjekt, winkel) {
-        _daten.lebensdauer = 0;
+    stoss(subjekt, winkel) {
+        this.daten.lebensdauer = 0;
         spieleTon("Schuss");
         subjekt.schussSchlägtEin();
     }
+}
 
-    return {
-        daten: _daten,
-        starte: _starte,
-        lebt: _lebt,
-        bewege: _bewege,
-        stoss: _stoss
-    }
-};
-
-var wechselWirken = function(subjekt, objekt) {
+function wechselWirken(subjekt, objekt) {
 
     var m = subjekt.daten.masse,
         maxAbstand = m * 10,
@@ -247,68 +224,69 @@ function spieleTon(welcherTon) {
     new Audio(welcherTon + ".wav").play();
 }
 
-var Spiel = (function() {
+class Spiel {
 
-    var _ausfuehrbareObjekte = [],
-        _bewegbareObjekte = [],
-        _raumschiff,
-        _asteroiden = [],
-        _schüsse = [],
-        _status = PAUSE,
-        _schnellModus = false;
+    constructor() {
+        this.ausfuehrbareObjekte = [];
+        this.bewegbareObjekte = [];
+        this.asteroiden = [];
+        this.schüsse = [];
+        this.status = PAUSE;
+        this._schnellModus = false;
 
 
-    _raumschiff = Raumschiff(START_X, START_Y, NORD);
-    _ausfuehrbareObjekte.push(_raumschiff);
-    _bewegbareObjekte.push(_raumschiff);
+        this.raumschiff = new Raumschiff(START_X, START_Y, NORD);
+        this.ausfuehrbareObjekte.push(this.raumschiff);
+        this.bewegbareObjekte.push(this.raumschiff);
 
-    for (var i = 0; i < ANZAHL_ASTEROIDEN; i++) {
-        var asteroid = ZufallsAsteroid(START_X, START_Y);
-        _asteroiden.push(asteroid);
-        _bewegbareObjekte.push(asteroid);
+        for (var i = 0; i < ANZAHL_ASTEROIDEN; i++) {
+            var asteroid = neuerZufallsAsteroid(START_X, START_Y);
+            this.asteroiden.push(asteroid);
+            this.bewegbareObjekte.push(asteroid);
+        }
+
+        for (var i = 0; i < 10; i++) {
+            var schuss = new Schuss();
+            this.schüsse.push(schuss);
+            this.bewegbareObjekte.push(schuss);
+        }
     }
 
-    for (var i = 0; i < 10; i++) {
-        var schuss = Schuss();
-        _schüsse.push(schuss);
-        _bewegbareObjekte.push(schuss);
-    }
-
-    function _weiter() {
-        for (objekt of _ausfuehrbareObjekte) {
+    weiter() {
+        for (var objekt of this.ausfuehrbareObjekte) {
             objekt.fuehreAus();
         }
 
         var mindestensEinAsteroidLebt = false;
 
-        for (asteroid of _asteroiden) {
+        for (var asteroid of this.asteroiden) {
             if (asteroid.lebt()) {
                 mindestensEinAsteroidLebt = true;
-                wechselWirken(asteroid, _raumschiff);
+                wechselWirken(asteroid, this.raumschiff);
 
-                for (schuss of _schüsse) {
+                for (schuss of this.schüsse) {
                     if (schuss.lebt()) {
                         wechselWirken(asteroid, schuss);
                     }
                 }
             }
 
-            if (_raumschiff.daten.zustand == ZERSTÖRT) {
-                _status = GAME_OVER;
+            if (this.raumschiff.daten.zustand == ZERSTÖRT) {
+                this.status = GAME_OVER;
             }
         }
 
         if (!mindestensEinAsteroidLebt) {
-            _status = GEWONNEN;
+            this.status = GEWONNEN;
         }
 
-        for (schuss of _schüsse) {
+        for (var schuss of this.schüsse) {
             if (schuss.lebt()) {
-                wechselWirken(_raumschiff, schuss);
+                wechselWirken(this.raumschiff, schuss);
             }
         }
 
-        for (objekt of _bewegbareObjekte) {
+        for (var objekt of this.bewegbareObjekte) {
             if (typeof objekt.lebt === 'undefined' || objekt.lebt()) {
                 objekt.bewege();
             }
@@ -316,32 +294,32 @@ var Spiel = (function() {
 
         // Wenn ein Asteroid sehr weit rechts vom Raumschiff weg ist, lassen wir ihn einfach
         // vom gegenüberliegenden "Rand" wieder hineinfliegen.
-        for (objekt of _asteroiden) {
-            if (objekt.daten.ort.x - _raumschiff.daten.ort.x > MAX_ABSTAND_RAUMSCHIFF) {
+        for (var objekt of this.asteroiden) {
+            if (objekt.daten.ort.x - this.raumschiff.daten.ort.x > MAX_ABSTAND_RAUMSCHIFF) {
                 objekt.daten.ort = objekt.daten.ort.minus(new Vektor(2 * MAX_ABSTAND_RAUMSCHIFF, 0));
             }
-            if (objekt.daten.ort.x - _raumschiff.daten.ort.x < -MAX_ABSTAND_RAUMSCHIFF) {
+            if (objekt.daten.ort.x - this.raumschiff.daten.ort.x < -MAX_ABSTAND_RAUMSCHIFF) {
                 objekt.daten.ort = objekt.daten.ort.plus(new Vektor(2 * MAX_ABSTAND_RAUMSCHIFF, 0));
             }
-            if (objekt.daten.ort.y - _raumschiff.daten.ort.y > MAX_ABSTAND_RAUMSCHIFF) {
+            if (objekt.daten.ort.y - this.raumschiff.daten.ort.y > MAX_ABSTAND_RAUMSCHIFF) {
                 objekt.daten.ort = objekt.daten.ort.minus(new Vektor(0, 2 * MAX_ABSTAND_RAUMSCHIFF));
             }
-            if (objekt.daten.ort.y - _raumschiff.daten.ort.y < -MAX_ABSTAND_RAUMSCHIFF) {
+            if (objekt.daten.ort.y - this.raumschiff.daten.ort.y < -MAX_ABSTAND_RAUMSCHIFF) {
                 objekt.daten.ort = objekt.daten.ort.plus(new Vektor(0, 2 * MAX_ABSTAND_RAUMSCHIFF));
             }
         }
     };
 
-    function _pausierenOderWeitermachen() {
-        switch (_status) {
-            case AM_LAUFEN: _status = PAUSE; break;
-            case PAUSE: _status = AM_LAUFEN; break;
+    pausierenOderWeitermachen() {
+        switch (this.status) {
+            case AM_LAUFEN: this.status = PAUSE; break;
+            case PAUSE: this.status = AM_LAUFEN; break;
             case GAME_OVER: break;
         }
     }
 
-    function _schiesse(ort, geschwindigkeit) {
-        for (var schuss of _schüsse) {
+    schiesse(ort, geschwindigkeit) {
+        for (var schuss of this.schüsse) {
             if (!schuss.lebt()) {
                 schuss.starte(ort, geschwindigkeit);
                 spieleTon("schiessen");
@@ -350,17 +328,8 @@ var Spiel = (function() {
         }
     }
 
-    return {
-        status: function() { return _status; },
-        raumschiff: _raumschiff,
-        asteroiden: _asteroiden,
-        schüsse: _schüsse,
-        pausierenOderWeitermachen: _pausierenOderWeitermachen,
-        weiter: _weiter,
-        schiesse: _schiesse,
-        schnellModusAn: function() { _schnellModus = true; },
-        schnellModus: function() { return _schnellModus; }
-    };
-});
+    schnellModusAn() { this._schnellModus = true; }
+    schnellModus() { return this._schnellModus; }
+}
 
-var spiel = Spiel();
+var spiel = new Spiel();
