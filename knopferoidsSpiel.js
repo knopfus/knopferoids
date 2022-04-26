@@ -14,11 +14,13 @@ const MIN_GRÖSSE = 10;
 
 class Objekt {
     
-    constructor(ort, geschwindigkeit, masse, radius, lebensPunkte) {
+    constructor(ort, geschwindigkeit, masse, radius, winkel, winkelGeschwindigkeit, lebensPunkte) {
         this.ort = ort;
         this.geschwindigkeit = geschwindigkeit;
         this.masse = masse;
         this.radius = radius;
+        this.winkel = winkel;
+        this.winkelGeschwindigkeit = winkelGeschwindigkeit;
         this.lebensPunkte = lebensPunkte;
     }
 
@@ -42,9 +44,10 @@ class Objekt {
         this.lebensPunkte = lebensPunkte;
     }
 
-    bewege() {
+    weiter() {
         if (this.lebt()) {
             this.ort = this.ort.plus(this.geschwindigkeit);
+            this.winkel += this.winkelGeschwindigkeit;
         }
     }
 
@@ -59,28 +62,25 @@ class Objekt {
 class Raumschiff extends Objekt {
 
     constructor(x, y, winkel) {
-        super(new Vektor(x, y), new Vektor(0, 0), 1, 10, 100);
+        super(new Vektor(x, y), new Vektor(0, 0), 1, 10, winkel, 0, 100);
 
-        this.winkel = winkel;
-        this.drehtNachLinks = false;
-        this.drehtNachRechts = false;
         this.gibtGas = false;
     }
 
     startLinksDrehung() {
-        this.drehtNachLinks = true;
+        this.winkelGeschwindigkeit = 0.1;
     }
 
     stopLinksDrehung() {
-        this.drehtNachLinks = false;
+        this.winkelGeschwindigkeit = 0;
     }
 
     startRechtsDrehung() {
-        this.drehtNachRechts = true;
+        this.winkelGeschwindigkeit = -0.1;
     }
 
     stopRechtsDrehung() {
-        this.drehtNachRechts = false;
+        this.winkelGeschwindigkeit = 0;
     }
 
     startGas() {
@@ -91,10 +91,10 @@ class Raumschiff extends Objekt {
         this.gibtGas = false;
     }
 
-    fuehreAus() {
-        if (this.drehtNachLinks) { this.winkel += 0.1; }
-        if (this.drehtNachRechts) { this.winkel -= 0.1; }
-        if (this.gibtGas) { this.beschleunige(Vektor.vonWinkelUndRadius(this.winkel, 0.1)); }
+    weiter() {
+        super.weiter();
+
+        if (this.lebt() && this.gibtGas) { this.beschleunige(Vektor.vonWinkelUndRadius(this.winkel, 0.1)); }
     }
 
     schiesse() {
@@ -133,16 +133,8 @@ class Raumschiff extends Objekt {
 
 class Asteroid extends Objekt {
 
-    constructor(ort, geschwindigkeit, masse, radius, winkel, geschwindigkeitWinkel) {
-        super(ort, geschwindigkeit, masse, radius, radius);
-
-        this.winkel = winkel;
-        this.geschwindigkeitWinkel = geschwindigkeitWinkel;
-    }
-
-    bewege() {
-        super.bewege();
-        this.winkel += this.geschwindigkeitWinkel;
+    constructor(ort, geschwindigkeit, masse, radius, winkel, winkelGeschwindigkeit) {
+        super(ort, geschwindigkeit, masse, radius, winkel, winkelGeschwindigkeit, radius);
     }
 
     schussSchlägtEin() {
@@ -178,7 +170,7 @@ var neuerZufallsAsteroid = function(naheBeiX, naheBeiY) {
 
 class Schuss extends Objekt {
     constructor() {
-        super(undefined, undefined, 1, 1, 0);
+        super(0, 0, 1, 1, 0, 0, 0);
     }
 
     starte(ort, geschwindigkeit) {
@@ -187,8 +179,8 @@ class Schuss extends Objekt {
         this.lebensPunkteSetzenAuf(500);
     }
 
-    bewege() {
-        super.bewege();
+    weiter() {
+        super.weiter();
 
         this.lebensPunkteAbziehen(1);
     }
@@ -235,8 +227,7 @@ function spieleTon(welcherTon) {
 class Spiel {
 
     constructor() {
-        this.ausfuehrbareObjekte = [];
-        this.bewegbareObjekte = [];
+        this.objekte = [];
         this.asteroiden = [];
         this.schüsse = [];
         this.status = PAUSE;
@@ -244,27 +235,22 @@ class Spiel {
 
 
         this.raumschiff = new Raumschiff(START_X, START_Y, NORD);
-        this.ausfuehrbareObjekte.push(this.raumschiff);
-        this.bewegbareObjekte.push(this.raumschiff);
+        this.objekte.push(this.raumschiff);
 
         for (var i = 0; i < ANZAHL_ASTEROIDEN; i++) {
             var asteroid = neuerZufallsAsteroid(START_X, START_Y);
             this.asteroiden.push(asteroid);
-            this.bewegbareObjekte.push(asteroid);
+            this.objekte.push(asteroid);
         }
 
         for (var i = 0; i < 10; i++) {
             var schuss = new Schuss();
             this.schüsse.push(schuss);
-            this.bewegbareObjekte.push(schuss);
+            this.objekte.push(schuss);
         }
     }
 
     weiter() {
-        for (var objekt of this.ausfuehrbareObjekte) {
-            objekt.fuehreAus();
-        }
-
         var mindestensEinAsteroidLebt = false;
 
         for (var asteroid of this.asteroiden) {
@@ -294,10 +280,8 @@ class Spiel {
             }
         }
 
-        for (var objekt of this.bewegbareObjekte) {
-            if (typeof objekt.lebt === 'undefined' || objekt.lebt()) {
-                objekt.bewege();
-            }
+        for (var objekt of this.objekte) {
+            objekt.weiter();
         }
 
         // Wenn ein Asteroid sehr weit rechts vom Raumschiff weg ist, lassen wir ihn einfach
