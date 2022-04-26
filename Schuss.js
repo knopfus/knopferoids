@@ -22,3 +22,22 @@ class Schuss extends Objekt {
         subjekt.schussSchlägtEin();
     }
 }
+
+class SchussDarsteller extends ObjektDarsteller {
+
+    constructor(htmlElement, schuss) {
+
+        super(htmlElement, schuss);
+        this.schuss = schuss;
+
+    }
+
+    stelleDar() {
+        if (this.schuss.lebt()) {
+            platziereElement(this.htmlElement, this.schuss.ort.x, this.schuss.ort.y);
+            this.htmlElement.style.visibility = "visible";
+        } else {
+            this.htmlElement.style.visibility = "hidden";
+        }
+    }
+}

@@ -70,3 +70,33 @@ class Raumschiff extends Objekt {
     }
 }
 
+
+class RaumschiffDarsteller extends ObjektDarsteller {
+    constructor(htmlElement, raumschiff) {
+
+        super(htmlElement, raumschiff);
+        this.raumschiff = raumschiff;
+        this.imgWennGas = htmlElement.querySelector("#Raumschiff-on");
+        this.imgWennZerstört = htmlElement.querySelector("#Raumschiff-explode");
+    }
+
+    stelleDar() {
+        platziereElement(
+            this.htmlElement,
+            this.raumschiff.ort.x,
+            this.raumschiff.ort.y,
+            this.raumschiff.winkel,
+            0,
+            10);
+
+        this.imgWennGas.style.visibility = this.raumschiff.gibtGas ? "visible" : "hidden";
+        if (this.raumschiff.istZerstört()) {
+            this.imgWennZerstört.style.visibility = "visible";
+            this.imgWennZerstört.setAttribute("src", this.imgWennZerstört.getAttribute("src"));
+            spieleTon("explosion");
+        } else {
+            this.imgWennZerstört.style.visibility = "hidden";
+        }
+
+    }
+}

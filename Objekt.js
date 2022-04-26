@@ -45,3 +45,14 @@ class Objekt {
     }
 }
 
+
+class ObjektDarsteller {
+
+    constructor(htmlElement, objekt) {
+        this.htmlElement = htmlElement;
+        this.objekt = objekt;
+    }
+
+    stelleDar() {}
+
+}

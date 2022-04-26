@@ -21,112 +21,17 @@ var platziereElement = function(htmlElement, x, y, winkel, nachRechts, nachUnten
             + "translateY(" + nachUnten + "px) ";
 };
 
-var RaumschiffDarsteller = (function(htmlElement, raumschiff) {
+class ReferenzPunktDarsteller extends ObjektDarsteller { 
 
-    var _htmlElement = htmlElement,
-        _raumschiff = raumschiff,
-        _imgWennGas = htmlElement.querySelector("#Raumschiff-on"),
-        _imgWennZerstört = htmlElement.querySelector("#Raumschiff-explode"),
-        _linksVerschiebung = 0,
-        _hochVerschiebung = 0;
+    constructor(htmlElement, objekt) {
+        super(htmlElement, objekt);
+    }
 
-    function _stelleDar() {
+    stelleDar() {
         platziereElement(
-            _htmlElement,
-            _raumschiff.ort.x,
-            _raumschiff.ort.y,
-            _raumschiff.winkel,
-            0,
-            10);
-
-        _imgWennGas.style.visibility = _raumschiff.gibtGas ? "visible" : "hidden";
-        if (_raumschiff.istZerstört()) {
-            _imgWennZerstört.style.visibility = "visible";
-            _imgWennZerstört.setAttribute("src", _imgWennZerstört.getAttribute("src"));
-            spieleTon("explosion");
-        } else {
-            _imgWennZerstört.style.visibility = "hidden";
-        }
-
+            this.htmlElement, this.objekt.ort.x, this.objekt.ort.y);
     }
-
-    return {
-        stelleDar: _stelleDar
-    };
-});
-
-var ReferenzPunktDarsteller = (function(htmlElement, objekt) {
-
-    var _htmlElement = htmlElement, _objekt = objekt;
-
-    function _stelleDar() {
-        platziereElement(
-            _htmlElement, _objekt.ort.x, _objekt.ort.y);
-    }
-
-    return {
-        stelleDar: _stelleDar
-    };
-});
-
-var AsteroidDarsteller = (function(htmlElement, asteroid) {
-
-    var _htmlElement = htmlElement,
-        _imgElement = _htmlElement.querySelector("img"),
-        _spanElement = _htmlElement.querySelector("span"),
-        _imgWennZerstört = htmlElement.querySelector(".Asteroid-explode"),
-        _asteroid = asteroid,
-        _explodiertUm = 0,
-        _verschwundenUm;
-
-    function _stelleDar() {
-        if (_verschwundenUm) { return; }
-
-        if (_explodiertUm) {
-            if (Date.now() - _explodiertUm > 2000) {
-                _verschwundenUm = Date.now();
-                _imgWennZerstört.style.display = "none";
-                _htmlElement.style.display = "none";
-            }
-            return;
-        }
-
-        _imgElement.style.width = asteroid.radius * 2 + "px";
-        _spanElement.innerText = Math.floor(_asteroid.geschwindigkeitNachRechts*10) + "," +
-            Math.floor(_asteroid.geschwindigkeitNachUnten*10);
-        platziereElement(_htmlElement, _asteroid.ort.x, _asteroid.ort.y, _asteroid.winkel);
-
-        if (_asteroid.istZerstört()) {
-            _imgElement.style.display = "none";
-            _imgWennZerstört.style.visibility = "visible";
-            _imgWennZerstört.setAttribute("src", _imgWennZerstört.getAttribute("src"));
-            spieleTon("explosion");
-            _explodiertUm = Date.now();
-        }
-    }
-
-    return {
-        stelleDar: _stelleDar
-    };
-});
-
-var SchussDarsteller = (function(htmlElement, schuss) {
-    var _htmlElement = htmlElement,
-        _schuss = schuss;
-
-    function _stelleDar() {
-        if (_schuss.lebt()) {
-            platziereElement(_htmlElement, _schuss.ort.x, _schuss.ort.y);
-            _htmlElement.style.visibility = "visible";
-        } else {
-            _htmlElement.style.visibility = "hidden";
-        }
-    }
-
-    return {
-        stelleDar: _stelleDar
-    };
-});
+}
 
 var StatusDarsteller = (function(htmlElement, spiel) {
     var _htmlElement = htmlElement,
@@ -159,7 +64,7 @@ var Spieldarsteller = (function(document, spiel) {
         asteroidTemplateElement;
 
     _darstellbareObjekte.push(
-        RaumschiffDarsteller(document.getElementById("Raumschiff"), spiel.raumschiff)
+        new RaumschiffDarsteller(document.getElementById("Raumschiff"), spiel.raumschiff)
     );
 
     for (var asteroid of spiel.asteroiden) {
@@ -172,7 +77,7 @@ var Spieldarsteller = (function(document, spiel) {
             weltraumElement.appendChild(asteroidElement); // Fügt das HTML Element innerhalb des Weltraums hinzu
         }
         _darstellbareObjekte.push(
-            AsteroidDarsteller(asteroidElement, asteroid)
+            new AsteroidDarsteller(asteroidElement, asteroid)
         );
     }
 
@@ -186,7 +91,7 @@ var Spieldarsteller = (function(document, spiel) {
     }
 
     _darstellbareObjekte.push(
-        ReferenzPunktDarsteller(document.getElementById("ReferenzPunkt"), spiel.raumschiff)
+        new ReferenzPunktDarsteller(document.getElementById("ReferenzPunkt"), spiel.raumschiff)
     );
 
     _darstellbareObjekte.push(
