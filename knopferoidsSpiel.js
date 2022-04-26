@@ -13,9 +13,12 @@ const MIN_GRÖSSE = 10;
 
 
 class Objekt {
-    lebensPunkte
     
-    constructor(lebensPunkte) {
+    constructor(ort, geschwindigkeit, masse, radius, lebensPunkte) {
+        this.ort = ort;
+        this.geschwindigkeit = geschwindigkeit;
+        this.masse = masse;
+        this.radius = radius;
         this.lebensPunkte = lebensPunkte;
     }
 
@@ -38,79 +41,77 @@ class Objekt {
     lebensPunkteSetzenAuf(lebensPunkte) {
         this.lebensPunkte = lebensPunkte;
     }
+
+    bewege() {
+        if (this.lebt()) {
+            this.ort = this.ort.plus(this.geschwindigkeit);
+        }
+    }
+
+    beschleunige(vektor) {
+        if (this.lebt()) {
+            this.geschwindigkeit = this.geschwindigkeit.plus(vektor);
+        }
+    }
 }
 
 
 class Raumschiff extends Objekt {
 
     constructor(x, y, winkel) {
-        super(100);
-        this.daten = {
-            ort: new Vektor(x, y),
-            winkel: winkel,
-            geschwindigkeit: new Vektor(0, 0),
-            drehtNachLinks: false,
-            drehtNachRechts: false,
-            gibtGas: false,
-            masse: 1,
-            radius: 10
-        };
+        super(new Vektor(x, y), new Vektor(0, 0), 1, 10, 100);
+
+        this.winkel = winkel;
+        this.drehtNachLinks = false;
+        this.drehtNachRechts = false;
+        this.gibtGas = false;
     }
 
     startLinksDrehung() {
-        this.daten.drehtNachLinks = true;
+        this.drehtNachLinks = true;
     }
 
     stopLinksDrehung() {
-        this.daten.drehtNachLinks = false;
+        this.drehtNachLinks = false;
     }
 
     startRechtsDrehung() {
-        this.daten.drehtNachRechts = true;
+        this.drehtNachRechts = true;
     }
 
     stopRechtsDrehung() {
-        this.daten.drehtNachRechts = false;
+        this.drehtNachRechts = false;
     }
 
     startGas() {
-        this.daten.gibtGas = true;
+        this.gibtGas = true;
     }
 
     stopGas() {
-        this.daten.gibtGas = false;
-    }
-
-    beschleunige() {
-        var beschleunigung = Vektor.vonWinkelUndRadius(this.daten.winkel, 0.1);
-        this.daten.geschwindigkeit = this.daten.geschwindigkeit.plus(beschleunigung);
-    }
-
-    bewege() {
-        this.daten.ort = this.daten.ort.plus(this.daten.geschwindigkeit);
+        this.gibtGas = false;
     }
 
     fuehreAus() {
-        if (this.daten.drehtNachLinks) { this.daten.winkel += 0.1; }
-        if (this.daten.drehtNachRechts) { this.daten.winkel -= 0.1; }
-        if (this.daten.gibtGas) { this.beschleunige(); }
+        if (this.drehtNachLinks) { this.winkel += 0.1; }
+        if (this.drehtNachRechts) { this.winkel -= 0.1; }
+        if (this.gibtGas) { this.beschleunige(Vektor.vonWinkelUndRadius(this.winkel, 0.1)); }
     }
 
     schiesse() {
         // "spiel" sollte jetzt bekannt sein. Etwas unschöne Programmierung...
-        var schussGeschwindigkeit = Vektor.vonWinkelUndRadius(this.daten.winkel, 1),
-            abstand = Vektor.vonWinkelUndRadius(this.daten.winkel, this.daten.radius * 3);
+        var schussGeschwindigkeit = Vektor.vonWinkelUndRadius(this.winkel, 1),
+            abstand = Vektor.vonWinkelUndRadius(this.winkel, this.radius * 3);
 
         spiel.schiesse(
-            this.daten.ort.plus(abstand),
-            this.daten.geschwindigkeit.plus(schussGeschwindigkeit)
+            this.ort.plus(abstand),
+            this.geschwindigkeit.plus(schussGeschwindigkeit)
         );
 
-        this.daten.geschwindigkeit = this.daten.geschwindigkeit.minus(schussGeschwindigkeit.skaliertUm(0.3));
+        this.beschleunige(schussGeschwindigkeit.skaliertUm(-0.3));
     }
 
     stoss(subjekt, winkel) {
-        var v = this.daten.geschwindigkeit.minus(subjekt.daten.geschwindigkeit),
+        var v = this.geschwindigkeit.minus(subjekt.geschwindigkeit),
             v_ = v.rotiertUm(-winkel);
 
         if (v_.x < 0 && v.r > 1.5) {
@@ -119,9 +120,9 @@ class Raumschiff extends Objekt {
 
         var v_neu = new Vektor(Math.max(v_.x, 0), 0),
             vneu = v_neu.rotiertUm(winkel),
-            ovneu = vneu.plus(subjekt.daten.geschwindigkeit);
+            ovneu = vneu.plus(subjekt.geschwindigkeit);
 
-        this.daten.geschwindigkeit = ovneu;        
+        this.geschwindigkeit = ovneu;
     }
 
     schussSchlägtEin() {
@@ -132,25 +133,27 @@ class Raumschiff extends Objekt {
 
 class Asteroid extends Objekt {
 
-    constructor(daten) {
-        super(daten.radius);
-        this.daten = daten;
+    constructor(ort, geschwindigkeit, masse, radius, winkel, geschwindigkeitWinkel) {
+        super(ort, geschwindigkeit, masse, radius, radius);
+
+        this.winkel = winkel;
+        this.geschwindigkeitWinkel = geschwindigkeitWinkel;
     }
 
     bewege() {
-        this.daten.ort = this.daten.ort.plus(this.daten.geschwindigkeit);
-        this.daten.winkel += this.daten.geschwindigkeitWinkel;
+        super.bewege();
+        this.winkel += this.geschwindigkeitWinkel;
     }
 
     schussSchlägtEin() {
-        if (this.daten.radius >= MIN_GRÖSSE) {
+        if (this.radius >= MIN_GRÖSSE) {
             this.lebensPunkteAbziehen(spiel.schnellModus() ? 10 : 2);
 
-            this.daten.radius = this.lebensPunkte;
-            this.daten.masse = Math.pow(this.daten.radius / 10, 3);
+            this.radius = this.lebensPunkte;
+            this.masse = Math.pow(this.radius / 10, 3);
         }
 
-        if (this.daten.radius < MIN_GRÖSSE) {
+        if (this.radius < MIN_GRÖSSE) {
             this.zerstören();
         }
     }
@@ -163,38 +166,31 @@ var neuerZufallsAsteroid = function(naheBeiX, naheBeiY) {
 
     var radius = zufallsZahl((MAX_GRÖSSE - MIN_GRÖSSE) / 2) + (MAX_GRÖSSE - MIN_GRÖSSE) / 2 + MIN_GRÖSSE;
 
-    return new Asteroid({
-            ort: new Vektor(naheBeiX + zufallsZahl(MAX_ABSTAND_RAUMSCHIFF * 2), naheBeiY + zufallsZahl(MAX_ABSTAND_RAUMSCHIFF * 2)),
-            winkel: zufallsZahl(180),
-            radius: radius,
-            masse: Math.pow(radius / 10, 3),
-            geschwindigkeit: new Vektor(zufallsZahl(1), zufallsZahl(1)),
-            geschwindigkeitWinkel: zufallsZahl(0.002)
-        });
+    return new Asteroid(
+            new Vektor(naheBeiX + zufallsZahl(MAX_ABSTAND_RAUMSCHIFF * 2), naheBeiY + zufallsZahl(MAX_ABSTAND_RAUMSCHIFF * 2)),
+            new Vektor(zufallsZahl(1), zufallsZahl(1)),
+            Math.pow(radius / 10, 3),
+            radius,
+            zufallsZahl(180),
+            zufallsZahl(0.002)
+        );
 };
 
 class Schuss extends Objekt {
     constructor() {
-        super(0);
-        this.daten = {
-            ort: undefined,
-            geschwindigkeit: undefined,
-            masse: 1,
-            radius: 1
-        };
+        super(undefined, undefined, 1, 1, 0);
     }
 
     starte(ort, geschwindigkeit) {
-        this.daten.ort = ort;
-        this.daten.geschwindigkeit = geschwindigkeit;
+        this.ort = ort;
+        this.geschwindigkeit = geschwindigkeit;
         this.lebensPunkteSetzenAuf(500);
     }
 
     bewege() {
-        if (this.lebt()) {
-            this.lebensPunkteAbziehen(1);
-            this.daten.ort = this.daten.ort.plus(this.daten.geschwindigkeit);
-        }
+        super.bewege();
+
+        this.lebensPunkteAbziehen(1);
     }
 
     stoss(subjekt, winkel) {
@@ -206,9 +202,9 @@ class Schuss extends Objekt {
 
 function wechselWirken(subjekt, objekt) {
 
-    var m = subjekt.daten.masse,
+    var m = subjekt.masse,
         maxAbstand = m * 10,
-        d = objekt.daten.ort.minus(subjekt.daten.ort),
+        d = objekt.ort.minus(subjekt.ort),
         G = 1;
 
     // Wenn maxAbstand in x oder y Achse schon überschritten ist, ist er es sowieso
@@ -218,7 +214,7 @@ function wechselWirken(subjekt, objekt) {
     if (d.r > maxAbstand) { return; }
 
     // Auf Oberfläche aufgetroffen?
-    if (d.r - subjekt.daten.radius < 10) {
+    if (d.r - subjekt.radius < 10) {
         objekt.stoss(subjekt, d.w);
 
         return;
@@ -228,8 +224,8 @@ function wechselWirken(subjekt, objekt) {
     // Die x- und y-Vektoren werden mit dem x- und y-Abstand multipliziert damit
     // die Richtung stimmt. Damit wäre es aber wieder nur noch umgekehrt proportional
     // also muss nochmals durch den Abstand geteilt werden.
-    var g = d.skaliertUm(G * m / Math.pow(d.r, 2) / d.r);
-    objekt.daten.geschwindigkeit = objekt.daten.geschwindigkeit.minus(g);
+    var g = d.skaliertUm(-G * m / Math.pow(d.r, 2) / d.r);
+    objekt.beschleunige(g);
 };
 
 function spieleTon(welcherTon) {
@@ -307,17 +303,17 @@ class Spiel {
         // Wenn ein Asteroid sehr weit rechts vom Raumschiff weg ist, lassen wir ihn einfach
         // vom gegenüberliegenden "Rand" wieder hineinfliegen.
         for (var objekt of this.asteroiden) {
-            if (objekt.daten.ort.x - this.raumschiff.daten.ort.x > MAX_ABSTAND_RAUMSCHIFF) {
-                objekt.daten.ort = objekt.daten.ort.minus(new Vektor(2 * MAX_ABSTAND_RAUMSCHIFF, 0));
+            if (objekt.ort.x - this.raumschiff.ort.x > MAX_ABSTAND_RAUMSCHIFF) {
+                objekt.ort = objekt.ort.minus(new Vektor(2 * MAX_ABSTAND_RAUMSCHIFF, 0));
             }
-            if (objekt.daten.ort.x - this.raumschiff.daten.ort.x < -MAX_ABSTAND_RAUMSCHIFF) {
-                objekt.daten.ort = objekt.daten.ort.plus(new Vektor(2 * MAX_ABSTAND_RAUMSCHIFF, 0));
+            if (objekt.ort.x - this.raumschiff.ort.x < -MAX_ABSTAND_RAUMSCHIFF) {
+                objekt.ort = objekt.ort.plus(new Vektor(2 * MAX_ABSTAND_RAUMSCHIFF, 0));
             }
-            if (objekt.daten.ort.y - this.raumschiff.daten.ort.y > MAX_ABSTAND_RAUMSCHIFF) {
-                objekt.daten.ort = objekt.daten.ort.minus(new Vektor(0, 2 * MAX_ABSTAND_RAUMSCHIFF));
+            if (objekt.ort.y - this.raumschiff.ort.y > MAX_ABSTAND_RAUMSCHIFF) {
+                objekt.ort = objekt.ort.minus(new Vektor(0, 2 * MAX_ABSTAND_RAUMSCHIFF));
             }
-            if (objekt.daten.ort.y - this.raumschiff.daten.ort.y < -MAX_ABSTAND_RAUMSCHIFF) {
-                objekt.daten.ort = objekt.daten.ort.plus(new Vektor(0, 2 * MAX_ABSTAND_RAUMSCHIFF));
+            if (objekt.ort.y - this.raumschiff.ort.y < -MAX_ABSTAND_RAUMSCHIFF) {
+                objekt.ort = objekt.ort.plus(new Vektor(0, 2 * MAX_ABSTAND_RAUMSCHIFF));
             }
         }
     };

@@ -33,13 +33,13 @@ var RaumschiffDarsteller = (function(htmlElement, raumschiff) {
     function _stelleDar() {
         platziereElement(
             _htmlElement,
-            _raumschiff.daten.ort.x,
-            _raumschiff.daten.ort.y,
-            _raumschiff.daten.winkel,
+            _raumschiff.ort.x,
+            _raumschiff.ort.y,
+            _raumschiff.winkel,
             0,
             10);
 
-        _imgWennGas.style.visibility = _raumschiff.daten.gibtGas ? "visible" : "hidden";
+        _imgWennGas.style.visibility = _raumschiff.gibtGas ? "visible" : "hidden";
         if (_raumschiff.istZerstört()) {
             _imgWennZerstört.style.visibility = "visible";
             _imgWennZerstört.setAttribute("src", _imgWennZerstört.getAttribute("src"));
@@ -61,7 +61,7 @@ var ReferenzPunktDarsteller = (function(htmlElement, objekt) {
 
     function _stelleDar() {
         platziereElement(
-            _htmlElement, _objekt.daten.ort.x, _objekt.daten.ort.y);
+            _htmlElement, _objekt.ort.x, _objekt.ort.y);
     }
 
     return {
@@ -91,10 +91,10 @@ var AsteroidDarsteller = (function(htmlElement, asteroid) {
             return;
         }
 
-        _imgElement.style.width = asteroid.daten.radius * 2 + "px";
-        _spanElement.innerText = Math.floor(_asteroid.daten.geschwindigkeitNachRechts*10) + "," +
-            Math.floor(_asteroid.daten.geschwindigkeitNachUnten*10);
-        platziereElement(_htmlElement, _asteroid.daten.ort.x, _asteroid.daten.ort.y, _asteroid.daten.winkel);
+        _imgElement.style.width = asteroid.radius * 2 + "px";
+        _spanElement.innerText = Math.floor(_asteroid.geschwindigkeitNachRechts*10) + "," +
+            Math.floor(_asteroid.geschwindigkeitNachUnten*10);
+        platziereElement(_htmlElement, _asteroid.ort.x, _asteroid.ort.y, _asteroid.winkel);
 
         if (_asteroid.istZerstört()) {
             _imgElement.style.display = "none";
@@ -116,7 +116,7 @@ var SchussDarsteller = (function(htmlElement, schuss) {
 
     function _stelleDar() {
         if (_schuss.lebt()) {
-            platziereElement(_htmlElement, _schuss.daten.ort.x, _schuss.daten.ort.y);
+            platziereElement(_htmlElement, _schuss.ort.x, _schuss.ort.y);
             _htmlElement.style.visibility = "visible";
         } else {
             _htmlElement.style.visibility = "hidden";
@@ -194,7 +194,7 @@ var Spieldarsteller = (function(document, spiel) {
     );
 
     function _stelleDar() {
-        kamera = spiel.raumschiff.daten.ort;
+        kamera = spiel.raumschiff.ort;
 
         weltraumElement.style.left = -kamera.x + window.innerWidth / 2;
         weltraumElement.style.top = kamera.y - window.innerHeight / 2 - 20;
