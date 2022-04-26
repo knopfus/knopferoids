@@ -1,3 +1,5 @@
+const NORD = Math.PI / 2;
+
 class Vektor {
     constructor(x, y) {
         this._x = x;
