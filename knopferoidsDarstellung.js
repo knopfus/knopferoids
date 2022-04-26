@@ -40,7 +40,7 @@ var RaumschiffDarsteller = (function(htmlElement, raumschiff) {
             10);
 
         _imgWennGas.style.visibility = _raumschiff.daten.gibtGas ? "visible" : "hidden";
-        if (_raumschiff.daten.zustand == ZERSTÖRT) {
+        if (_raumschiff.istZerstört()) {
             _imgWennZerstört.style.visibility = "visible";
             _imgWennZerstört.setAttribute("src", _imgWennZerstört.getAttribute("src"));
             spieleTon("explosion");
@@ -96,7 +96,7 @@ var AsteroidDarsteller = (function(htmlElement, asteroid) {
             Math.floor(_asteroid.daten.geschwindigkeitNachUnten*10);
         platziereElement(_htmlElement, _asteroid.daten.ort.x, _asteroid.daten.ort.y, _asteroid.daten.winkel);
 
-        if (_asteroid.daten.zustand == ZERSTÖRT) {
+        if (_asteroid.istZerstört()) {
             _imgElement.style.display = "none";
             _imgWennZerstört.style.visibility = "visible";
             _imgWennZerstört.setAttribute("src", _imgWennZerstört.getAttribute("src"));

@@ -4,8 +4,6 @@ const AM_LAUFEN = 0;
 const PAUSE = 10;
 const GAME_OVER = 20;
 const GEWONNEN = 30;
-const WIE_NEU = 100;
-const ZERSTÖRT = 0;
 
 const ANZAHL_ASTEROIDEN = 20;
 const START_X = 500, START_Y = 200;
@@ -14,9 +12,39 @@ const MAX_GRÖSSE = 120;
 const MIN_GRÖSSE = 10;
 
 
-class Raumschiff {
+class Objekt {
+    lebensPunkte
+    
+    constructor(lebensPunkte) {
+        this.lebensPunkte = lebensPunkte;
+    }
+
+    lebt() {
+        return this.lebensPunkte > 0;
+    }
+
+    istZerstört() {
+        return this.lebensPunkte == 0;
+    }
+
+    zerstören() {
+        this.lebensPunkte = 0;
+    }
+
+    lebensPunkteAbziehen(delta) {
+        this.lebensPunkte = Math.max(0, this.lebensPunkte - delta);
+    }
+
+    lebensPunkteSetzenAuf(lebensPunkte) {
+        this.lebensPunkte = lebensPunkte;
+    }
+}
+
+
+class Raumschiff extends Objekt {
 
     constructor(x, y, winkel) {
+        super(100);
         this.daten = {
             ort: new Vektor(x, y),
             winkel: winkel,
@@ -24,7 +52,6 @@ class Raumschiff {
             drehtNachLinks: false,
             drehtNachRechts: false,
             gibtGas: false,
-            zustand: WIE_NEU,
             masse: 1,
             radius: 10
         };
@@ -82,16 +109,12 @@ class Raumschiff {
         this.daten.geschwindigkeit = this.daten.geschwindigkeit.minus(schussGeschwindigkeit.skaliertUm(0.3));
     }
 
-    zerstört() {
-        this.daten.zustand = ZERSTÖRT;
-    }
-
     stoss(subjekt, winkel) {
         var v = this.daten.geschwindigkeit.minus(subjekt.daten.geschwindigkeit),
             v_ = v.rotiertUm(-winkel);
 
         if (v_.x < 0 && v.r > 1.5) {
-            this.zerstört();
+            this.zerstören();
         }
 
         var v_neu = new Vektor(Math.max(v_.x, 0), 0),
@@ -102,14 +125,15 @@ class Raumschiff {
     }
 
     schussSchlägtEin() {
-        this.zerstört();
+        this.zerstören();
     }
 }
 
 
-class Asteroid {
+class Asteroid extends Objekt {
 
     constructor(daten) {
+        super(daten.radius);
         this.daten = daten;
     }
 
@@ -118,23 +142,16 @@ class Asteroid {
         this.daten.winkel += this.daten.geschwindigkeitWinkel;
     }
 
-    lebt() {
-        return this.daten.zustand != ZERSTÖRT;
-    }
-
-    zerstört() {
-        this.daten.zustand = ZERSTÖRT;
-    }
-
     schussSchlägtEin() {
         if (this.daten.radius >= MIN_GRÖSSE) {
-            if (spiel.schnellModus()) {this.daten.radius -= 8; }
-            this.daten.radius -= 2;
-            this.daten.masse = Math.pow(this.daten.radius / 10, 3)
+            this.lebensPunkteAbziehen(spiel.schnellModus() ? 10 : 2);
+
+            this.daten.radius = this.lebensPunkte;
+            this.daten.masse = Math.pow(this.daten.radius / 10, 3);
         }
 
         if (this.daten.radius < MIN_GRÖSSE) {
-            this.zerstört();
+            this.zerstören();
         }
     }
 }
@@ -152,17 +169,16 @@ var neuerZufallsAsteroid = function(naheBeiX, naheBeiY) {
             radius: radius,
             masse: Math.pow(radius / 10, 3),
             geschwindigkeit: new Vektor(zufallsZahl(1), zufallsZahl(1)),
-            geschwindigkeitWinkel: zufallsZahl(0.002),
-            zustand: WIE_NEU
+            geschwindigkeitWinkel: zufallsZahl(0.002)
         });
 };
 
-class Schuss {
+class Schuss extends Objekt {
     constructor() {
+        super(0);
         this.daten = {
             ort: undefined,
             geschwindigkeit: undefined,
-            lebensdauer: 0,
             masse: 1,
             radius: 1
         };
@@ -171,22 +187,18 @@ class Schuss {
     starte(ort, geschwindigkeit) {
         this.daten.ort = ort;
         this.daten.geschwindigkeit = geschwindigkeit;
-        this.daten.lebensdauer = 500;
-    }
-
-    lebt() {
-        return this.daten.lebensdauer > 0;
+        this.lebensPunkteSetzenAuf(500);
     }
 
     bewege() {
         if (this.lebt()) {
-            this.daten.lebensdauer -= 1;
+            this.lebensPunkteAbziehen(1);
             this.daten.ort = this.daten.ort.plus(this.daten.geschwindigkeit);
         }
     }
 
     stoss(subjekt, winkel) {
-        this.daten.lebensdauer = 0;
+        this.zerstören();
         spieleTon("Schuss");
         subjekt.schussSchlägtEin();
     }
@@ -271,7 +283,7 @@ class Spiel {
                 }
             }
 
-            if (this.raumschiff.daten.zustand == ZERSTÖRT) {
+            if (this.raumschiff.istZerstört()) {
                 this.status = GAME_OVER;
             }
         }
