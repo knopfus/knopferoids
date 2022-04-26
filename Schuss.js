@@ -26,15 +26,12 @@ class Schuss extends Objekt {
 class SchussDarsteller extends ObjektDarsteller {
 
     constructor(htmlElement, schuss) {
-
         super(htmlElement, schuss);
-        this.schuss = schuss;
-
     }
 
     stelleDar() {
-        if (this.schuss.lebt()) {
-            platziereElement(this.htmlElement, this.schuss.ort.x, this.schuss.ort.y);
+        super.stelleDar();
+        if (this.objekt.lebt()) {
             this.htmlElement.style.visibility = "visible";
         } else {
             this.htmlElement.style.visibility = "hidden";

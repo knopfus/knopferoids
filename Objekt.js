@@ -48,11 +48,17 @@ class Objekt {
 
 class ObjektDarsteller {
 
-    constructor(htmlElement, objekt) {
+    constructor(htmlElement, objekt, nachRechts, nachUnten) {
         this.htmlElement = htmlElement;
         this.objekt = objekt;
+        this.nachRechts = nachRechts ? nachRechts : 0;
+        this.nachUnten = nachUnten ? nachUnten : 0;
     }
 
-    stelleDar() {}
+    stelleDar() {
+        if (this.objekt.lebt()) {
+            platziereElement(this.htmlElement, this.objekt.ort.x, this.objekt.ort.y, this.objekt.winkel, this.nachRechts, this.nachUnten);
+        }
+    }
 
 }

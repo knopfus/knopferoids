@@ -46,15 +46,15 @@ class AsteroidDarsteller extends ObjektDarsteller {
         super(htmlElement, asteroid);
 
         this.imgElement = this.htmlElement.querySelector("img");
-        this.spanElement = this.htmlElement.querySelector("span");
         this.imgWennZerstört = htmlElement.querySelector(".Asteroid-explode");
-        this.asteroid = asteroid;
         this.explodiertUm = 0;
         this.verschwundenUm;
 
     }
 
     stelleDar() {
+        super.stelleDar();
+
         if (this.verschwundenUm) { return; }
 
         if (this.explodiertUm) {
@@ -66,12 +66,9 @@ class AsteroidDarsteller extends ObjektDarsteller {
             return;
         }
 
-        this.imgElement.style.width = this.asteroid.radius * 2 + "px";
-        this.spanElement.innerText = Math.floor(this.asteroid.geschwindigkeitNachRechts*10) + "," +
-            Math.floor(this.asteroid.geschwindigkeitNachUnten*10);
-        platziereElement(this.htmlElement, this.asteroid.ort.x, this.asteroid.ort.y, this.asteroid.winkel);
+        this.imgElement.style.width = this.objekt.radius * 2 + "px";
 
-        if (this.asteroid.istZerstört()) {
+        if (this.objekt.istZerstört()) {
             this.imgElement.style.display = "none";
             this.imgWennZerstört.style.visibility = "visible";
             this.imgWennZerstört.setAttribute("src", this.imgWennZerstört.getAttribute("src"));
