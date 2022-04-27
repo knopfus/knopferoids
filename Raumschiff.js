@@ -72,9 +72,9 @@ class Raumschiff extends Objekt {
 
 
 class RaumschiffDarsteller extends ObjektDarsteller {
-    constructor(htmlElement, raumschiff) {
+    constructor(htmlElement, raumschiff, explosionVorlage) {
 
-        super(htmlElement, raumschiff, 0, 10);
+        super(htmlElement, raumschiff, 0, 10, explosionVorlage);
         this.raumschiff = raumschiff;
         this.imgWennGas = htmlElement.querySelector("#Raumschiff-on");
         this.imgWennZerstört = htmlElement.querySelector("#Raumschiff-explode");
@@ -84,14 +84,5 @@ class RaumschiffDarsteller extends ObjektDarsteller {
         super.stelleDar();
 
         this.imgWennGas.style.visibility = this.raumschiff.gibtGas ? "visible" : "hidden";
-
-        if (this.raumschiff.istZerstört()) {
-            this.imgWennZerstört.style.visibility = "visible";
-            this.imgWennZerstört.setAttribute("src", this.imgWennZerstört.getAttribute("src"));
-            spieleTon("explosion");
-        } else {
-            this.imgWennZerstört.style.visibility = "hidden";
-        }
-
     }
 }

@@ -41,39 +41,18 @@ function neuerZufallsAsteroid(naheBeiX, naheBeiY) {
 
 class AsteroidDarsteller extends ObjektDarsteller {
 
-    constructor(htmlElement, asteroid) {
+    constructor(htmlElement, asteroid, explosionVorlage) {
 
-        super(htmlElement, asteroid);
-
+        super(htmlElement, asteroid, 0, 0, explosionVorlage);
         this.imgElement = this.htmlElement.querySelector("img");
-        this.imgWennZerstört = htmlElement.querySelector(".Asteroid-explode");
-        this.explodiertUm = 0;
-        this.verschwundenUm;
 
     }
 
     stelleDar() {
         super.stelleDar();
 
-        if (this.verschwundenUm) { return; }
-
-        if (this.explodiertUm) {
-            if (Date.now() - this.explodiertUm > 2000) {
-                this.verschwundenUm = Date.now();
-                this.imgWennZerstört.style.display = "none";
-                this.htmlElement.style.display = "none";
-            }
-            return;
-        }
-
-        this.imgElement.style.width = this.objekt.radius * 2 + "px";
-
-        if (this.objekt.istZerstört()) {
-            this.imgElement.style.display = "none";
-            this.imgWennZerstört.style.visibility = "visible";
-            this.imgWennZerstört.setAttribute("src", this.imgWennZerstört.getAttribute("src"));
-            spieleTon("explosion");
-            this.explodiertUm = Date.now();
+        if (this.objekt.lebt()) {
+            this.imgElement.style.width = this.objekt.radius * 2 + "px";
         }
     }
 }

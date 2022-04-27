@@ -29,12 +29,4 @@ class SchussDarsteller extends ObjektDarsteller {
         super(htmlElement, schuss);
     }
 
-    stelleDar() {
-        super.stelleDar();
-        if (this.objekt.lebt()) {
-            this.htmlElement.style.visibility = "visible";
-        } else {
-            this.htmlElement.style.visibility = "hidden";
-        }
-    }
 }

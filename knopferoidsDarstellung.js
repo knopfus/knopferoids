@@ -23,6 +23,8 @@ var StatusDarsteller = (function(htmlElement, spiel) {
 
 var Spieldarsteller = (function(document, spiel) {
 
+    var _explosionVorlage = document.querySelector("#Explosion-Vorlage");
+
     var _darstellbareObjekte = [],
         kamera = new Vektor(0, 0),
         weltraumElement = document.getElementById("Weltraum"),
@@ -30,7 +32,7 @@ var Spieldarsteller = (function(document, spiel) {
         asteroidTemplateElement;
 
     _darstellbareObjekte.push(
-        new RaumschiffDarsteller(document.getElementById("Raumschiff"), spiel.raumschiff)
+        new RaumschiffDarsteller(document.getElementById("Raumschiff"), spiel.raumschiff, _explosionVorlage)
     );
 
     for (var asteroid of spiel.asteroiden) {
@@ -43,7 +45,7 @@ var Spieldarsteller = (function(document, spiel) {
             weltraumElement.appendChild(asteroidElement); // Fügt das HTML Element innerhalb des Weltraums hinzu
         }
         _darstellbareObjekte.push(
-            new AsteroidDarsteller(asteroidElement, asteroid)
+            new AsteroidDarsteller(asteroidElement, asteroid, _explosionVorlage)
         );
     }
 

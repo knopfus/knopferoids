@@ -70,17 +70,55 @@ function platziereElement(htmlElement, x, y, winkel, nachRechts, nachUnten) {
 
 class ObjektDarsteller {
 
-    constructor(htmlElement, objekt, nachRechts, nachUnten) {
+    constructor(htmlElement, objekt, nachRechts, nachUnten, explosionVorlage) {
         this.htmlElement = htmlElement;
         this.objekt = objekt;
         this.nachRechts = nachRechts ? nachRechts : 0;
         this.nachUnten = nachUnten ? nachUnten : 0;
+
+        this.explosionVorlage = explosionVorlage;
+        this.kannExplodieren = !!explosionVorlage;
+        this.explodiertUm = 0;
+        this.verschwundenUm = 0;
     }
 
     stelleDar() {
+        if (this.verschwundenUm) { return; }
+
+        if (this.explodiertUm) {
+            if (Date.now() - this.explodiertUm > 2000) {
+                this.verschwundenUm = Date.now();
+                this.explosionDiv.parentElement.removeChild(this.explosionDiv);
+                this.explosionDiv = null;
+            }
+            return;
+        }
+
+        if (this.objekt.istZerstört()) {
+            this.htmlElement.style.display = "none";
+
+            if (this.kannExplodieren) {
+                this.explodieren();
+            }
+        }
+
         if (this.objekt.lebt()) {
+            this.htmlElement.style.display = "";
             platziereElement(this.htmlElement, this.objekt.ort.x, this.objekt.ort.y, this.objekt.winkel, this.nachRechts, this.nachUnten);
         }
+    }
+
+    explodieren() {
+        var explosionDiv = this.explosionDiv = this.explosionVorlage.cloneNode(true);
+        var explosionImg = explosionDiv.querySelector("img");
+        explosionDiv.removeAttribute("id");
+        this.explosionVorlage.parentNode.appendChild(explosionDiv);
+
+        platziereElement(explosionDiv, this.objekt.ort.x, this.objekt.ort.y, this.objekt.winkel, this.nachRechts, this.nachUnten);
+        
+        explosionImg.setAttribute("src", explosionImg.getAttribute("src"));
+        spieleTon("explosion");
+        this.explodiertUm = Date.now();
     }
 
 }
