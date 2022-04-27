@@ -13,8 +13,6 @@ body { background-color: black; overflow: hidden; }
 
 .Asteroid-explode { position: absolute; transform: translate(-50%, -50%);visibility: hidden; }
 
-.ReferenzPunkt { width: 0px; height: 0px; border: 1px solid red; display: none; }
-
 .Beschriftung { color: red; font-size: 10px; display: none; }
 
 .Schuss { width: 2px; height: 2px; }

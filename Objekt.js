@@ -46,6 +46,28 @@ class Objekt {
 }
 
 
+function cssVonWinkel(winkel) {
+    // Die Winkel in CSS sind wie die Uhr: Sie beginnen (mit 0) bei 12 Uhr und gehen
+    // gehen sie dem Uhrzeiger nach.
+    // Mathematische Winkel beginnen aber rechts (bei 3 Uhr) und gehen dann gegen
+    // den Uhrzeigersinn.
+
+    return (Math.PI / 2) - winkel;
+};
+
+function platziereElement(htmlElement, x, y, winkel, nachRechts, nachUnten) {
+    if (!winkel) winkel = 0;
+    if (!nachRechts) nachRechts = 0;
+    if (!nachUnten) nachUnten = 0;
+
+    htmlElement.style.transform = " "
+            + "translateX(" + (x - htmlElement.clientWidth / 2) + "px) "
+            + "translateY(" + (800 - y - htmlElement.clientHeight / 2) + "px) "
+            + "rotate(" + cssVonWinkel(winkel) + "rad) "
+            + "translateX(" + nachRechts + "px) "
+            + "translateY(" + nachUnten + "px) ";
+};
+
 class ObjektDarsteller {
 
     constructor(htmlElement, objekt, nachRechts, nachUnten) {

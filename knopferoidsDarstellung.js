@@ -1,38 +1,4 @@
 
-var cssVonWinkel = function(winkel) {
-    // Die Winkel in CSS sind wie die Uhr: Sie beginnen (mit 0) bei 12 Uhr und gehen
-    // gehen sie dem Uhrzeiger nach.
-    // Mathematische Winkel beginnen aber rechts (bei 3 Uhr) und gehen dann gegen
-    // den Uhrzeigersinn.
-
-    return (Math.PI / 2) - winkel;
-};
-
-var platziereElement = function(htmlElement, x, y, winkel, nachRechts, nachUnten) {
-    if (!winkel) winkel = 0;
-    if (!nachRechts) nachRechts = 0;
-    if (!nachUnten) nachUnten = 0;
-
-    htmlElement.style.transform = " "
-            + "translateX(" + (x - htmlElement.clientWidth / 2) + "px) "
-            + "translateY(" + (800 - y - htmlElement.clientHeight / 2) + "px) "
-            + "rotate(" + cssVonWinkel(winkel) + "rad) "
-            + "translateX(" + nachRechts + "px) "
-            + "translateY(" + nachUnten + "px) ";
-};
-
-class ReferenzPunktDarsteller extends ObjektDarsteller { 
-
-    constructor(htmlElement, objekt) {
-        super(htmlElement, objekt);
-    }
-
-    stelleDar() {
-        platziereElement(
-            this.htmlElement, this.objekt.ort.x, this.objekt.ort.y);
-    }
-}
-
 var StatusDarsteller = (function(htmlElement, spiel) {
     var _htmlElement = htmlElement,
         _displayDefault = htmlElement.style.display;
@@ -89,10 +55,6 @@ var Spieldarsteller = (function(document, spiel) {
         schussElementVorlage.parentElement.appendChild(schussElement);
         _darstellbareObjekte.push(new SchussDarsteller(schussElement, schuss));
     }
-
-    _darstellbareObjekte.push(
-        new ReferenzPunktDarsteller(document.getElementById("ReferenzPunkt"), spiel.raumschiff)
-    );
 
     _darstellbareObjekte.push(
         StatusDarsteller(document.getElementById("Status"), spiel)
