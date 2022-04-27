@@ -1,7 +1,7 @@
 
 class Schuss extends Objekt {
-    constructor() {
-        super(0, 0, 1, 1, 0, 0, 0);
+    constructor(spiel) {
+        super(0, 0, 1, 1, 0, 0, 0, spiel);
     }
 
     starte(ort, geschwindigkeit) {

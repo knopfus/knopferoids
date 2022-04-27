@@ -1,7 +1,7 @@
 
 class Objekt {
     
-    constructor(ort, geschwindigkeit, masse, radius, winkel, winkelGeschwindigkeit, lebensPunkte) {
+    constructor(ort, geschwindigkeit, masse, radius, winkel, winkelGeschwindigkeit, lebensPunkte, spiel) {
         this.ort = ort;
         this.geschwindigkeit = geschwindigkeit;
         this.masse = masse;
@@ -9,6 +9,7 @@ class Objekt {
         this.winkel = winkel;
         this.winkelGeschwindigkeit = winkelGeschwindigkeit;
         this.lebensPunkte = lebensPunkte;
+        this.spiel = spiel;
     }
 
     lebt() {
@@ -109,15 +110,15 @@ class ObjektDarsteller {
     }
 
     explodieren() {
-        var explosionDiv = this.explosionDiv = this.explosionVorlage.cloneNode(true);
+        var explosionDiv = elementKopieren(this.explosionVorlage);
         var explosionImg = explosionDiv.querySelector("img");
-        explosionDiv.removeAttribute("id");
-        this.explosionVorlage.parentNode.appendChild(explosionDiv);
 
         platziereElement(explosionDiv, this.objekt.ort.x, this.objekt.ort.y, this.objekt.winkel, this.nachRechts, this.nachUnten);
         
         explosionImg.setAttribute("src", explosionImg.getAttribute("src"));
         spieleTon("explosion");
+
+        this.explosionDiv = explosionDiv;
         this.explodiertUm = Date.now();
     }
 

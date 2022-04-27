@@ -2,8 +2,8 @@
 
 class Asteroid extends Objekt {
 
-    constructor(ort, geschwindigkeit, masse, radius, winkel, winkelGeschwindigkeit) {
-        super(ort, geschwindigkeit, masse, radius, winkel, winkelGeschwindigkeit, radius);
+    constructor(ort, geschwindigkeit, masse, radius, winkel, winkelGeschwindigkeit, spiel) {
+        super(ort, geschwindigkeit, masse, radius, winkel, winkelGeschwindigkeit, radius, spiel);
     }
 
     schussSchlägtEin() {
@@ -21,7 +21,7 @@ class Asteroid extends Objekt {
 }
 
 
-function neuerZufallsAsteroid(naheBeiX, naheBeiY) {
+function neuerZufallsAsteroid(naheBeiX, naheBeiY, spiel) {
     function zufallsZahl(max) {
         return (Math.random() * 2 - 1) * max;
     }
@@ -34,7 +34,8 @@ function neuerZufallsAsteroid(naheBeiX, naheBeiY) {
             Math.pow(radius / 10, 3),
             radius,
             zufallsZahl(180),
-            zufallsZahl(0.002)
+            zufallsZahl(0.002),
+            spiel
         );
 };
 

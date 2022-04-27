@@ -13,6 +13,8 @@ body { background-color: black; overflow: hidden; }
 .Explosion { transform: translate(-50%, -50%); }
 #Explosion-Vorlage { display: none; }
 
+#Asteroid-Vorlage { display: none; }
+
 .Schuss { width: 2px; height: 2px; }
 .Schuss > img { width: 100%; height: 100%; }
 #Schuss-Vorlage { visibility: hidden; }

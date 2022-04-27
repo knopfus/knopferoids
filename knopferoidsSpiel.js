@@ -52,18 +52,17 @@ class Spiel {
         this.status = PAUSE;
         this._schnellModus = false;
 
-
-        this.raumschiff = new Raumschiff(START_X, START_Y, NORD);
+        this.raumschiff = new Raumschiff(START_X, START_Y, NORD, this);
         this.objekte.push(this.raumschiff);
 
         for (var i = 0; i < ANZAHL_ASTEROIDEN; i++) {
-            var asteroid = neuerZufallsAsteroid(START_X, START_Y);
+            var asteroid = neuerZufallsAsteroid(START_X, START_Y, this);
             this.asteroiden.push(asteroid);
             this.objekte.push(asteroid);
         }
 
         for (var i = 0; i < 10; i++) {
-            var schuss = new Schuss();
+            var schuss = new Schuss(this);
             this.schüsse.push(schuss);
             this.objekte.push(schuss);
         }

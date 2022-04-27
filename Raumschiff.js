@@ -1,8 +1,8 @@
 
 class Raumschiff extends Objekt {
 
-    constructor(x, y, winkel) {
-        super(new Vektor(x, y), new Vektor(0, 0), 1, 10, winkel, 0, 100);
+    constructor(x, y, winkel, spiel) {
+        super(new Vektor(x, y), new Vektor(0, 0), 1, 10, winkel, 0, 100, spiel);
 
         this.gibtGas = false;
     }
@@ -38,11 +38,10 @@ class Raumschiff extends Objekt {
     }
 
     schiesse() {
-        // "spiel" sollte jetzt bekannt sein. Etwas unschöne Programmierung...
         var schussGeschwindigkeit = Vektor.vonWinkelUndRadius(this.winkel, 1),
             abstand = Vektor.vonWinkelUndRadius(this.winkel, this.radius * 3);
 
-        spiel.schiesse(
+        this.spiel.schiesse(
             this.ort.plus(abstand),
             this.geschwindigkeit.plus(schussGeschwindigkeit)
         );
