@@ -49,11 +49,17 @@ class Spiel {
         this.objekte = [];
         this.asteroiden = [];
         this.schüsse = [];
+        this.raumschiffe = [];
         this.status = PAUSE;
         this._schnellModus = false;
 
         this.raumschiff = new Raumschiff(START_X, START_Y, NORD, this);
         this.objekte.push(this.raumschiff);
+        for (var i = 0; i < 3; i++) {
+            var offensivesRaumschiff = neuesZufallsOffensivesRaumschiff(START_X, START_Y, this, this.raumschiff);
+            this.raumschiffe.push(offensivesRaumschiff);
+            this.objekte.push(offensivesRaumschiff);
+        }
 
         for (var i = 0; i < ANZAHL_ASTEROIDEN; i++) {
             var asteroid = neuerZufallsAsteroid(START_X, START_Y, this);
@@ -75,6 +81,9 @@ class Spiel {
             if (asteroid.lebt()) {
                 mindestensEinAsteroidLebt = true;
                 wechselWirken(asteroid, this.raumschiff);
+                for (var raumschiff of this.raumschiffe) {
+                    wechselWirken(asteroid, raumschiff);
+                }
 
                 for (schuss of this.schüsse) {
                     if (schuss.lebt()) {
@@ -95,6 +104,9 @@ class Spiel {
         for (var schuss of this.schüsse) {
             if (schuss.lebt()) {
                 wechselWirken(this.raumschiff, schuss);
+                for (var raumschiff of this.raumschiffe) {
+                    wechselWirken(raumschiff, schuss);
+                }
             }
         }
 

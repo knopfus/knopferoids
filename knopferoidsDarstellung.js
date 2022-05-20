@@ -37,13 +37,19 @@ class Spieldarsteller {
 
         this.darstellbareObjekte.push(new RaumschiffDarsteller(document.getElementById("Raumschiff"), spiel.raumschiff, explosionVorlage));
 
+        var raumschiffVorlage = document.querySelector("#Raumschiff-Vorlage");
+        var raumschiffDarstellers = spiel.raumschiffe.map(raumschiff => (new RaumschiffDarsteller(elementKopieren(raumschiffVorlage), raumschiff, explosionVorlage)));
+
         var asteroidVorlage = document.querySelector("#Asteroid-Vorlage");
         var asteroidDarstellers = spiel.asteroiden.map(asteroid => (new AsteroidDarsteller(elementKopieren(asteroidVorlage), asteroid, explosionVorlage)));
 
         var schussVorlage = document.getElementById("Schuss-Vorlage");
         var schussDarstellers = spiel.schüsse.map(schuss => (new SchussDarsteller(elementKopieren(schussVorlage), schuss)));
 
-        this.darstellbareObjekte = this.darstellbareObjekte.concat(asteroidDarstellers).concat(schussDarstellers);
+        this.darstellbareObjekte = this.darstellbareObjekte
+            .concat(raumschiffDarstellers)
+            .concat(asteroidDarstellers)
+            .concat(schussDarstellers);
 
         this.darstellbareObjekte.push(new StatusDarsteller(document.getElementById("Status"), spiel));
     }

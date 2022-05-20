@@ -6,9 +6,11 @@ body { background-color: black; overflow: hidden; }
 .Ding, .Ding * { mix-blend-mode: screen; }
 
 #Raumschiff { z-index: 1000; }
-#Raumschiff-off, #Raumschiff-on { width: 20px; }
-#Raumschiff-off { position: absolute; }
-#Raumschiff-on { position: relative; visibility: hidden; }
+
+.Raumschiff-off, .Raumschiff-on { width: 20px; }
+.Raumschiff-off { position: absolute; }
+.Raumschiff-on { position: relative; visibility: hidden; }
+#Raumschiff-Vorlage { display: none; }
 
 .Explosion { transform: translate(-50%, -50%); }
 #Explosion-Vorlage { display: none; }

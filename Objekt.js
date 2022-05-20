@@ -36,7 +36,7 @@ class Objekt {
         if (this.lebt()) {
             this.ort = this.ort.plus(this.geschwindigkeit);
             this.winkel += this.winkelGeschwindigkeit;
-        }
+        }
     }
 
     beschleunige(vektor) {
